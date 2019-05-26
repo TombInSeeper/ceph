@@ -956,10 +956,10 @@ OPTION(bdev_ocssd_enable, OPT_BOOL, true)
 OPTION(bdev_ocssd_driver,OPT_STR,"libocssd")
     // ||
     OPTION(bdev_ocssd_device,OPT_STR,"/dev/nvme0n1")
-OPTION(bdev_ocssd_segment_size,OPT_U32,(384*1024*1024))
+OPTION(bdev_ocssd_segment_size,OPT_U64,(384*1024*1024))
 // This option value must be bigger than 1
 // And related freespace should be removed from Bluestore::allocator during mount period
-OPTION(bdev_ocssd_segment_reserved,OPT_U32,1)
+OPTION(bdev_ocssd_segment_reserved,OPT_U64,1)
 
 
 OPTION(bluefs_alloc_size, OPT_U64, 1048576)
