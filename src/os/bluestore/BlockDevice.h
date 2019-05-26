@@ -23,8 +23,28 @@
 
 #include "acconfig.h"
 #include "os/fs/FS.h"
+#include "include/interval_set.h"
 
 #define SPDK_PREFIX "spdk:"
+
+
+#define WITH_OCSSD
+// FOR OCSSD
+struct ocssd_aio_t{
+    //low-level ctx
+    void* ocssd_ctx;
+
+    //FOR DEBUG
+    std::string dg_str;
+
+    //Set by caller
+    uint8_t  io_type;
+    uint8_t  io_depth;
+    uint64_t lba_off;
+    uint64_t lba_len;
+    bufferlist bl;
+    void    *priv;
+};
 
 /// track in-flight io
 struct IOContext {
@@ -32,6 +52,12 @@ struct IOContext {
 #ifdef HAVE_SPDK
   void *nvme_task_first = nullptr;
   void *nvme_task_last = nullptr;
+#endif
+
+#ifdef WITH_OCSSD
+    uint64_t ocssd_submit_seq = 0 ;
+    std::list<ocssd_aio_t> ocssd_pending_aios;
+    std::list<ocssd_aio_t> ocssd_running_aios;
 #endif
 
   std::mutex lock;
@@ -103,6 +129,12 @@ public:
   virtual int invalidate_cache(uint64_t off, uint64_t len) = 0;
   virtual int open(string path) = 0;
   virtual void close() = 0;
+
+  //New
+  virtual int init_disk() { return 0 ;};
+  virtual int get_written_extents( interval_set<uint64_t>& p ) { return 0 ;};
+  virtual int queue_discard(interval_set<uint64_t> &p) { return 0; };
+
 };
 
 #endif //CEPH_OS_BLUESTORE_BLOCKDEVICE_H

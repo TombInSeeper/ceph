@@ -948,6 +948,20 @@ OPTION(bdev_block_size, OPT_INT, 4096)
 OPTION(bdev_nvme_unbind_from_kernel, OPT_BOOL, false)
 OPTION(bdev_nvme_retry_count, OPT_INT, -1) // -1 means by default which is 4
 
+//bdev_ocssd_optins
+OPTION(bdev_ocssd_enable, OPT_BOOL, true)
+// if set to "mock" , data will be written tp /read from : bluestore_block_dev for debug or test ,
+// data will not store into true OCSSD
+// if set to "libocssd" , the below option is meaningful
+OPTION(bdev_ocssd_driver,OPT_STR,"libocssd")
+    // ||
+    OPTION(bdev_ocssd_device,OPT_STR,"/dev/nvme0n1")
+OPTION(bdev_ocssd_segment_size,OPT_U32,(384*1024*1024))
+// This option value must be bigger than 1
+// And related freespace should be removed from Bluestore::allocator during mount period
+OPTION(bdev_ocssd_segment_reserved,OPT_U32,1)
+
+
 OPTION(bluefs_alloc_size, OPT_U64, 1048576)
 OPTION(bluefs_max_prefetch, OPT_U64, 1048576)
 OPTION(bluefs_min_log_runway, OPT_U64, 1048576)  // alloc when we get this low

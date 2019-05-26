@@ -184,6 +184,7 @@ struct bluestore_onode_t {
   uint64_t nid;                        ///< numeric id (locally unique)
   uint64_t size;                       ///< object size
   map<string, bufferptr> attrs;        ///< attrs
+
   map<uint64_t, bluestore_extent_t> block_map;   ///< block data
   map<uint64_t,bluestore_overlay_t> overlay_map; ///< overlay data (stored in db)
   map<uint64_t,uint16_t> overlay_refs; ///< overlay keys ref counts (if >1)

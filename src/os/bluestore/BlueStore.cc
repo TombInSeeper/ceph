@@ -768,6 +768,7 @@ BlueStore::BlueStore(CephContext *cct, const string& path)
     finisher(cct),
     kv_sync_thread(this),
     kv_stop(false),
+    gc_thread(this),
     logger(NULL)
 {
   _init_logger();
@@ -938,11 +939,25 @@ int BlueStore::_open_bdev(bool create)
 {
   bluestore_bdev_label_t label;
   assert(bdev == NULL);
+
   string p = path + "/block";
+  if(g_conf->bdev_ocssd_enable) {
+      p = string("ocssd:") + p;
+      dout(0) << __func__ << " ocdevice path : " << p << dendl;
+  }
   bdev = BlockDevice::create(p, aio_cb, static_cast<void*>(this));
+
+  //REMOVE PREFIX
+  p = path + "/block";
+
   int r = bdev->open(p);
   if (r < 0)
     goto fail;
+
+  if(create)
+  {
+      bdev->init_disk();
+  }
 
   if (bdev->supported_bdev_label()) {
     r = _check_or_set_bdev_label(p, bdev->get_size(), "main", create);
@@ -967,7 +982,7 @@ void BlueStore::_close_bdev()
   bdev = NULL;
 }
 
-int BlueStore::_open_alloc()
+int BlueStore::_open_alloc( bool create )
 {
   assert(fm == NULL);
   assert(alloc == NULL);
@@ -987,8 +1002,24 @@ int BlueStore::_open_alloc()
     ++num;
     bytes += p.second;
   }
-  dout(10) << __func__ << " loaded " << pretty_si_t(bytes)
-	   << " in " << num << " extents"
+  if(!create && g_conf->bdev_ocssd_enable){
+     interval_set<uint64_t> freelist_set , written_set , invalid_set;
+     for (auto& p : fl) {
+          freelist_set.insert(p.first, p.second);
+      }
+     bdev->get_written_extents(written_set);
+     invalid_set.intersection_of(freelist_set,written_set);
+  
+    for(auto it = invalid_set.begin() ; it!= invalid_set.end(); it++) {
+      alloc->init_rm_free(it.get_start(), it.get_len());
+      bytes -= it.get_len();
+     }
+    discard_to_gctrd (invalid_set);
+  }
+
+
+  dout(1) << __func__ << " loaded " << pretty_si_t(bytes)
+	   << " in " << num << " extents" << alloc
 	   << dendl;
   return r;
 }
@@ -1204,15 +1235,23 @@ int BlueStore::_open_db(bool create)
     if (create) {
       // note: we might waste a 4k block here if block.db is used, but it's
       // simpler.
-      uint64_t initial =
-	bdev->get_size() * (g_conf->bluestore_bluefs_min_ratio +
-			    g_conf->bluestore_bluefs_gift_ratio);
-      initial = MAX(initial, g_conf->bluestore_bluefs_min);
-      // align to bluefs's alloc_size
-      initial = ROUND_UP_TO(initial, g_conf->bluefs_alloc_size);
-      initial += g_conf->bluefs_alloc_size - BLUEFS_START;
-      bluefs->add_block_extent(bluefs_shared_bdev, BLUEFS_START, initial);
-      bluefs_extents.insert(BLUEFS_START, initial);
+      if(!g_conf ->bdev_ocssd_enable) {
+          uint64_t initial =
+                  bdev->get_size() * (g_conf->bluestore_bluefs_min_ratio +
+                                      g_conf->bluestore_bluefs_gift_ratio);
+          initial = MAX(initial, g_conf->bluestore_bluefs_min);
+          // align to bluefs's alloc_size
+          initial = ROUND_UP_TO(initial, g_conf->bluefs_alloc_size);
+          initial += g_conf->bluefs_alloc_size - BLUEFS_START;
+          bluefs->add_block_extent(bluefs_shared_bdev, BLUEFS_START, initial);
+          bluefs_extents.insert(BLUEFS_START, initial);
+      }
+     else
+      {
+          uint64_t reserved = g_conf->bdev_ocssd_segment_reserved * 
+		g_conf->bdev_ocssd_segment_size;
+          bluefs_extents.insert(BLUEFS_START, reserved - BLUEFS_START );
+      }
     }
 
     snprintf(bfn, sizeof(bfn), "%s/block.wal", path.c_str());
@@ -1741,7 +1780,7 @@ int BlueStore::mkfs()
   if (r < 0)
     goto out_close_bdev;
 
-  r = _open_alloc();
+  r = _open_alloc(true);
   if (r < 0)
     goto out_close_db;
 
@@ -1754,14 +1793,12 @@ int BlueStore::mkfs()
       assert(bluefs_extents.num_intervals() == 1);
       interval_set<uint64_t>::iterator p = bluefs_extents.begin();
       reserved = p.get_start() + p.get_len();
-      dout(20) << __func__ << " reserved " << reserved << " for bluefs" << dendl;
       bufferlist bl;
       ::encode(bluefs_extents, bl);
       t->set(PREFIX_SUPER, "bluefs_extents", bl);
       dout(20) << __func__ << " bluefs_extents " << bluefs_extents << dendl;
-    } else {
-      reserved = BLUEFS_START;
     }
+
     uint64_t end = bdev->get_size() - reserved;
     if (g_conf->bluestore_debug_prefill > 0) {
       dout(1) << __func__ << " pre-fragmenting freespace, using "
@@ -1782,7 +1819,12 @@ int BlueStore::mkfs()
 	dout(20) << "  free " << start << "~" << l << " use " << u << dendl;
 	start += l + u;
       }
-    } else {
+    }
+   else
+    {
+      dout(1) << __func__ << ",bdev->get_size():" << pretty_si_t(bdev->get_size())
+	<< ",reserved_for_ocssd:" << pretty_si_t(reserved) 
+	<< ",avaliable_free_space:" << pretty_si_t(end) << dendl;
       fm->release(reserved, end, t);
     }
     db->submit_transaction_sync(t);
@@ -1873,7 +1915,10 @@ int BlueStore::mount()
   if (r < 0)
     goto out_bdev;
 
-  r = _open_alloc();
+  //GC-Thread
+  gc_thread.init();
+
+  r = _open_alloc(false);
   if (r < 0)
     goto out_db;
 
@@ -1885,7 +1930,7 @@ int BlueStore::mount()
   if (r < 0)
     goto out_alloc;
 
-  if (bluefs) {
+  if (bluefs && ! g_conf->bdev_ocssd_enable) {
     r = _reconcile_bluefs_freespace();
     if (r < 0)
       goto out_coll;
@@ -1895,7 +1940,9 @@ int BlueStore::mount()
   wal_tp.start();
   kv_sync_thread.create("bstore_kv_sync");
 
-  r = _wal_replay();
+  if( !g_conf -> bdev_ocssd_enable) {
+      r = _wal_replay();
+  }
   if (r < 0)
     goto out_stop;
 
@@ -1932,6 +1979,9 @@ int BlueStore::umount()
   _reap_collections();
   coll_map.clear();
 
+  dout(20) << __func__ << " stopping gc thread" << dendl;
+  gc_thread.shutdown();
+  
   dout(20) << __func__ << " stopping kv thread" << dendl;
   _kv_stop();
   dout(20) << __func__ << " draining wal_wq" << dendl;
@@ -2037,7 +2087,7 @@ int BlueStore::fsck()
   if (r < 0)
     goto out_bdev;
 
-  r = _open_alloc();
+  r = _open_alloc(false);
   if (r < 0)
     goto out_db;
 
@@ -2596,6 +2646,11 @@ int BlueStore::read(
   return r;
 }
 
+
+static std::atomic_uint read_seq= {0};
+static std::atomic_uint write_seq= {0};
+
+
 int BlueStore::_do_read(
     OnodeRef o,
     uint64_t offset,
@@ -2622,8 +2677,9 @@ int BlueStore::_do_read(
     buffered = true;
   }
 
-  dout(20) << __func__ << " " << offset << "~" << length << " size "
-	   << o->onode.size << dendl;
+  dout(0) << __func__ << ",oid=" << o->onode.nid << "," << read_seq++ << std::hex << ",0x" << offset << "~" << length << ",size=0x"
+	   << o->onode.size << std::dec << dendl;
+
   bl.clear();
   _dump_onode(o);
 
@@ -2674,7 +2730,7 @@ int BlueStore::_do_read(
       r = db->get(PREFIX_OVERLAY, key, &v);
       if (r < 0) {
         derr << " failed to fetch overlay(nid = " << o->onode.nid
-             << ", key = " << key 
+             << ", key = " << key
              << "): " << cpp_strerror(r) << dendl;
         goto out;
       }
@@ -2705,7 +2761,7 @@ int BlueStore::_do_read(
 	uint64_t front_extra = x_off % block_size;
 	uint64_t r_off = x_off - front_extra;
 	uint64_t r_len = ROUND_UP_TO(x_len + front_extra, block_size);
-	dout(30) << __func__ << "  reading " << r_off << "~" << r_len << dendl;
+	dout(0) << __func__ << "  reading " << r_off << "~" << r_len << dendl;
 	bufferlist t;
 	r = bdev->read(r_off + bp->second.offset, r_len, &t, &ioc, buffered);
 	if (r < 0) {
@@ -2743,6 +2799,8 @@ int BlueStore::_do_read(
   r = bl.length();
 
  out:
+  dout(0) << __func__ << ",over,r=0x" << std::hex <<  r << std::dec <<   dendl;
+
   return r;
 }
 
@@ -3871,28 +3929,135 @@ void BlueStore::_txc_update_fm(TransContext *txc)
 
   for (interval_set<uint64_t>::iterator p = txc->allocated.begin();
       p != txc->allocated.end();
-      ++p) {
+      ++p)
+  {
     fm->allocate(p.get_start(), p.get_len(), txc->t);
   }
 
   if (txc->wal_txn) {
     txc->wal_txn->released.swap(txc->released);
     assert(txc->released.empty());
-  } else {
-    for (interval_set<uint64_t>::iterator p = txc->released.begin();
-	p != txc->released.end();
-	++p) {
-      dout(20) << __func__ << " release " << p.get_start()
-	<< "~" << p.get_len() << dendl;
-      fm->release(p.get_start(), p.get_len(), txc->t);
+  }
+  else
+  {
+    if(!g_conf->bdev_ocssd_enable) {
+      for (interval_set<uint64_t>::iterator p = txc->released.begin();
+	  p != txc->released.end();
+	  ++p) {
+	dout(20) << __func__ << " release " << p.get_start()
+	  << "~" << p.get_len() << dendl;
+	fm->release(p.get_start(), p.get_len(), txc->t);
 
-      if (!g_conf->bluestore_debug_no_reuse_blocks)
-	alloc->release(p.get_start(), p.get_len());
+       if (!g_conf->bluestore_debug_no_reuse_blocks)
+	{
+
+	      alloc->release(p.get_start(), p.get_len());	
+	}
+      }
+    }
+   else
+    {
+	discard_to_gctrd (txc->released);
     }
   }
 }
 
+//------------------------GCThread
 
+
+void BlueStore::discard_to_gctrd(interval_set<uint64_t> &p) {
+  gc_thread.lock.Lock();
+  gc_thread.invalid_extents.insert(p);
+  if(gc_thread.invalid_extents.size() > g_conf->bdev_ocssd_segment_size)
+    gc_thread.cond.SignalOne();
+  gc_thread.lock.Unlock();
+}
+
+void BlueStore::GCThread::may_trigger_gc( bool timeout , std::set<uint32_t> &sids)
+{
+  if(gc_policy == STUPID)
+  {
+      uint64_t victim_seg_id = 0;
+      for(auto sid : sids) {
+      auto it = segmentSummarys + sid;
+      if (it->invalid_bitmap.all())
+        {
+          victim_seg_id = sid;
+          interval_set<uint64_t> p;
+          p.insert(victim_seg_id * g_conf->bdev_ocssd_segment_size , g_conf->bdev_ocssd_segment_size );
+          //tell bdev to discard (erase) the entire segment;
+          store->bdev->queue_discard(p);
+          it->invalid_bitmap.reset();
+          //give back to Allocator
+          store->alloc->release(p.begin().get_start(),p.begin().get_len());
+        }
+      }
+  }
+}
+
+
+
+
+void *BlueStore::GCThread::entry()
+{
+  lock.Lock();
+  interval_set<uint64_t> invalid_set_local;
+  segmentSummarys = new SegmentSummary[store->bdev->get_size() / g_conf->bdev_ocssd_segment_size];
+
+  bool timeout = false;
+  while (!stop) {
+   cond.Wait(lock);
+   if(!invalid_extents.empty())
+    {
+      invalid_set_local.swap(invalid_extents);
+      lock.Unlock();
+    }
+   else
+    {
+      continue;
+    }
+    //---------------------------------------------------
+    std::set<uint32_t> sids;
+    {
+      //MARK INVALID
+     for(auto it = invalid_set_local.begin() ; it != invalid_set_local.end(); it++)
+       {
+        auto off = it.get_start();
+        auto len = it.get_len();
+        auto l = len;
+        auto o = off;
+        while(l)
+          {
+          auto sid = o / g_conf->bdev_ocssd_segment_size;
+          auto idx = ( o % g_conf->bdev_ocssd_segment_size ) / 0x1000 ;
+          segmentSummarys[sid].invalid_bitmap.set(idx);
+          o += 0x1000;
+          l -= 0x1000;
+          if(sids.count(sid) == 0 && sid != 0 )
+            sids.insert(sid);
+          }
+      }
+      //
+      invalid_set_local.clear();
+    }
+    may_trigger_gc(timeout,sids);
+
+    //RELOCK
+    lock.Lock();
+  }
+
+  lock.Unlock();
+  delete segmentSummarys;
+  stop = false;
+  return NULL;
+}
+
+// =======================================================
+
+
+
+
+//-------------------------------------------------
 void BlueStore::_kv_sync_thread()
 {
   dout(10) << __func__ << " start" << dendl;
@@ -3937,7 +4102,10 @@ void BlueStore::_kv_sync_thread()
       KeyValueDB::Transaction t = db->get_transaction();
 
       vector<bluestore_extent_t> bluefs_gift_extents;
-      if (bluefs) {
+
+
+      //If ocssd enabled , we nerver reblance
+      if (bluefs && !g_conf->bdev_ocssd_enable) {
 	int r = _balance_bluefs_freespace(&bluefs_gift_extents, t);
 	assert(r >= 0);
 	if (r > 0) {
@@ -5351,7 +5519,7 @@ int BlueStore::_do_allocate(
       // for safety, set the UNWRITTEN flag here.  We should clear this in
       // _do_write or else we likely have problems.
       e.flags |= bluestore_extent_t::FLAG_UNWRITTEN;
-      int r = alloc->allocate(length, min_alloc_size, hint,
+      int r = alloc->allocate(length, min_alloc_size, 0,
 			      &e.offset, &e.length);
       assert(r == 0);
       assert(e.length <= length);  // bc length is a multiple of min_alloc_size
@@ -5389,8 +5557,10 @@ int BlueStore::_do_allocate(
 bool BlueStore::_can_overlay_write(OnodeRef o, uint64_t length)
 {
   return
+    !g_conf->bdev_ocssd_enable &&
     (int)o->onode.overlay_map.size() < g_conf->bluestore_overlay_max &&
-    (int)length <= g_conf->bluestore_overlay_max_length;
+    (int)length <= g_conf->bluestore_overlay_max_length
+    ;
 }
 
 int BlueStore::_do_write(
@@ -5414,6 +5584,12 @@ int BlueStore::_do_write(
   if (orig_length == 0) {
     return 0;
   }
+
+  if(g_conf->bdev_ocssd_enable){
+      return _do_ocssd_write(txc,c,o,orig_offset,orig_length, orig_bl , fadvise_flags);
+  }
+
+
 
   bool buffered = false;
   if (fadvise_flags & CEPH_OSD_OP_FLAG_FADVISE_WILLNEED) {
@@ -5700,6 +5876,158 @@ int BlueStore::_do_write(
  out:
   return r;
 }
+
+
+// For OCSSD
+int BlueStore::_do_ocssd_write(TransContext *txc,
+                    CollectionRef &c,
+                    OnodeRef o,
+                    uint64_t offset, uint64_t length,
+                    bufferlist& bl,
+                    uint32_t fadvise_flags)
+{
+
+    //
+    // read a page which offset fall within
+    // and
+
+    if(length == 0)
+        return 0;
+
+    auto pre_read_page = [ & ](uint64_t o_off , bufferlist &page)->void {
+        auto pg_aligned_offset = (o_off / 4096) * 4096;
+        int r = _do_read( o ,pg_aligned_offset, 4096 , page);
+        if(r <  0 ) {
+		derr <<  "pre_read_page error:" << r  << dendl;
+	}
+        assert( r >= 0 && r <= 4096);
+        int zlen = 4096 - r;
+        if(zlen){
+            page.append_zero(zlen);
+            //logger->inc(l_bluestore_write_pad_bytes, zlen);
+        }
+        //logger->inc(l_bluestore_write_penalty_read_ops);
+    };
+
+    assert(bdev->get_block_size() == 4096);
+    assert(g_conf->bluestore_min_alloc_size == 4096);
+
+    dout(40) << "before:\n";
+    bl.hexdump(*_dout);
+    *_dout << dendl;
+
+
+    const uint32_t page_size = 4096;
+    uint64_t  alloc_offset = offset & ~(page_size - 1);
+    uint64_t  alloc_length = 0;
+    uint64_t  cow_head;
+    uint64_t  cow_tail;
+    if(offset / page_size == ( offset + length - 1) / page_size && length != page_size)
+    {
+        //fall with in one block
+        bufferlist page;
+        // We must pre_read the page which is pointed to by offset
+        dout(0) << __func__ << ",step1:" << "pre read a page" << dendl;
+        pre_read_page(offset, page);
+        dout(0) << __func__ << ",step2:" << "modify buffer" << dendl;
+        // copy bl's content to correct range in the 4K page .
+        page.copy_in( offset % 4096 , length , bl );
+        // swap the result conten to bl
+        dout(0) << __func__ << ",step3:" << "swap buffer " << dendl;
+        bl.swap(page);
+        alloc_length = 4096;
+    }
+    else
+    {
+        bufferlist n_bl;
+
+        //uint64_t head_length , middle_length , tail_length;
+
+        uint64_t head_offset = offset;
+        uint64_t head_length = head_offset % 4096 == 0 ? 0 : ( 4096 - head_offset % 4096);
+
+        uint64_t tail_offset =  ( (offset + length) / 4096 ) * 4096;
+        uint64_t tail_length =   (offset + length) % 4096 ;
+
+        //uint64_t middle_offset = head_offset + head_length;
+        uint64_t middle_length = length - ( head_length + tail_length);
+
+        if (head_length) {
+            bufferlist page;
+            pre_read_page(head_offset, page);
+
+            bufferlist ori_head;
+            ori_head.substr_of( bl, 0 , head_length );
+            // copy_into page;
+            page.copy_in(offset % 4096, head_length , ori_head);
+            n_bl.append(page);
+        }
+        //TODO
+        if(middle_length){
+            bufferlist middle_data ;
+            middle_data.substr_of( bl , head_length , middle_length);
+            n_bl.append(middle_data);
+        }
+        //TODO
+        if(tail_length){
+            bufferlist page;
+            pre_read_page(tail_offset , page);
+            bufferlist ori_tail;
+            ori_tail.substr_of(bl, head_length + middle_length ,tail_length );
+            // copy_into page
+            page.copy_in(0, tail_length, ori_tail);
+            n_bl.append(page);
+        }
+        bl.swap(n_bl);
+        alloc_length = bl.length();
+
+        assert(alloc_length % 4096 == 0 );
+    }
+
+
+    
+
+    {
+        std::lock_guard<std::mutex> l(submit_lock);
+        int r = _do_allocate(txc, c, o, alloc_offset, alloc_length, 0, 0, &cow_head, &cow_tail);
+        ceph_assert( r == 0 );
+        if(txc->ioc.ocssd_pending_aios.empty()){
+            txc->ioc.ocssd_submit_seq = submit_seq++;
+        }
+    }
+
+    auto it = o->onode.find_extent(alloc_offset);
+    assert(it != o->onode.block_map.end());
+    assert(it->first == alloc_offset );
+    assert(it->second.length == alloc_length );
+
+    if(offset + length > o->onode.size){
+        dout(0) << __func__ << std::hex << ",extend onode :0x" << o->onode.size << " to:0x"
+                << offset + length
+                << std::dec << dendl;
+        o->onode.size = offset + length;
+    }
+
+    dout(0) << __func__ << std::hex << ",oid=" << o->onode.nid << ",orig:0x" << offset << "~" << length
+            << "," << "aligned:0x" << alloc_offset << "~" << alloc_length
+            << "," << "bdev_lba_off:0x" << it->second.offset << "~" << it->second.length
+            << ",ioc->submit_seq=" << txc->ioc.ocssd_submit_seq
+            << std::dec << dendl;
+    dout(40) << "after:\n";
+    bl.hexdump(*_dout);
+    *_dout << dendl;
+
+    bdev->aio_write(it->second.offset,bl,&(txc->ioc),false);
+    it->second.clear_flag(bluestore_extent_t::FLAG_UNWRITTEN);
+
+    //dout(0) << __func__ << "txc->allocated:" << txc->allocated << dendl;
+    //dout(0) << __func__ << "txc->released:" << txc->released << dendl;
+    
+
+
+    return  0;
+}
+
 
 int BlueStore::_write(TransContext *txc,
 		      CollectionRef& c,
@@ -6101,6 +6429,11 @@ int BlueStore::_setattr(TransContext *txc,
 	   << " = " << r << dendl;
   return r;
 }
+
+
+
+// ATTR OPERATION
+
 
 int BlueStore::_setattrs(TransContext *txc,
 			 CollectionRef& c,

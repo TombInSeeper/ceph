@@ -444,21 +444,55 @@ if [ "$start_mon" -eq 1 ]; then
         fsid = $(uuidgen)
         osd pg bits = 3
         osd pgp bits = 5  ; (invalid, but ceph should cope!)
-        osd crush chooseleaf type = 0
+        osd crush chooseleaf type = 1
+	osd pool default size = 1
         osd pool default min size = 1
         osd failsafe full ratio = .99
         mon osd reporter subtree level = osd
         mon osd full ratio = .99
         mon data avail warn = 10
         mon data avail crit = 1
-        erasure code dir = $EC_PATH
-        plugin dir = $CS_PATH
-        osd pool default erasure code profile = plugin=jerasure technique=reed_sol_van k=2 m=1 ruleset-failure-domain=osd
-        rgw frontends = fastcgi, civetweb port=$CEPH_RGW_PORT
-        rgw dns name = localhost
-        filestore fd cache size = 32
-        run dir = $CEPH_OUT_DIR
-        enable experimental unrecoverable data corrupting features = *
+
+        ms_type = async
+
+      osd_enable_op_tracker = false         ;MARK this option is mentioned by report
+      throttler_perf_counter = false        ;MARK this option is mentioned by report
+      rocksdb_cache_size = 4294967296
+
+      auth supported = none
+
+
+      ;MARK this option is mentioned by report
+      debug_lockdep = 0/0
+      debug_context = 0/0
+      debug_crush = 0/0
+      debug_buffer = 0/0
+      debug_timer = 0/0
+      debug_filer = 0/0
+      debug_objecter = 0/0
+      debug_osd = 0/0
+      debug_rados = 0/0
+      debug_bluestore =1/1
+      debug_rbd = 0/0
+      debug_ms = 0/0
+      debug_monc = 0/0
+      debug_tp = 0/0
+      debug_auth = 0/0
+      debug_finisher = 0/0
+      debug_heartbeatmap = 0/0
+      debug_perfcounter = 0/0
+      debug_rgw = 0/0
+      debug_asok = 0/0
+      debug_throttle = 0/0
+
+      erasure code dir = $EC_PATH
+      plugin dir = $CS_PATH
+      osd pool default erasure code profile = plugin=jerasure technique=reed_sol_van k=2 m=1 ruleset-failure-domain=osd
+      rgw frontends = fastcgi, civetweb port=$CEPH_RGW_PORT
+      rgw dns name = localhost
+      filestore fd cache size = 32
+      run dir = $CEPH_OUT_DIR
+      enable experimental unrecoverable data corrupting features = bluestore rocksdb mstype-async
 EOF
 if [ "$lockdep" -eq 1 ] ; then
 cat <<EOF >> $conf_fn
@@ -504,20 +538,24 @@ $DAEMONOPTS
         osd journal size = 100
         osd class tmp = out
         osd class dir = $OBJCLASS_PATH
-        osd scrub load threshold = 2000.0
-        osd debug op order = true
-        filestore wbthrottle xfs ios start flusher = 10
-        filestore wbthrottle xfs ios hard limit = 20
-        filestore wbthrottle xfs inodes hard limit = 30
-        filestore wbthrottle btrfs ios start flusher = 10
-        filestore wbthrottle btrfs ios hard limit = 20
-        filestore wbthrottle btrfs inodes hard limit = 30
-	bluestore fsck on mount = true
+
+	osd pool default min size = 1
+        
 	bluestore block create = true
-	bluestore block db size = 67108864
-	bluestore block db create = true
-	bluestore block wal size = 134217728
-	bluestore block wal create = true
+        bluestore fsck on mount = true
+        bluestore block db size = 67108864
+        bluestore block db create = true
+        bluestore block wal size = 134217728
+        bluestore block wal create = true
+
+
+        bluestore_min_alloc_size = 4096
+
+        bdev_ocssd_driver = mock
+        bdev_ocssd_enable = enable
+        bdev_ocssd_device = /dev/nvme0n1
+
+
 $COSDDEBUG
 $COSDMEMSTORE
 $COSDSHORT

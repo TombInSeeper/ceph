@@ -46,9 +46,10 @@ namespace {
   string ldap_bindpw = "supersecret";
   string ldap_searchdn = "cn=users,cn=accounts,dc=rgw,dc=com";
   string ldap_dnattr = "uid";
+  string ldap_searchfilter = "";
 
   rgw::LDAPHelper ldh(ldap_uri, ldap_binddn, ldap_bindpw, ldap_searchdn,
-		      ldap_dnattr);
+                      ldap_searchfilter, ldap_dnattr);
 
 } /* namespace */
 

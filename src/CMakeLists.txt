@@ -596,13 +596,16 @@ set(lib_mon_srcs
   auth/cephx/CephxKeyServer.cc
   auth/cephx/CephxServiceHandler.cc
   auth/AuthServiceHandler.cc
-  ${osd_mon_files} mon/Paxos.cc
+  ${osd_mon_files}
+  mon/Paxos.cc
   mon/PaxosService.cc
   mon/OSDMonitor.cc
+        osd/OSDCap.cc # add dependcies for OSDMonitor
   mon/MDSMonitor.cc
   mon/MonmapMonitor.cc
   mon/LogMonitor.cc
   mon/AuthMonitor.cc
+        mds/MDSAuthCaps.cc # add dependcies for AuthMonitor
   mon/Elector.cc
   mon/HealthMonitor.cc
   ${os_mon_files}
@@ -664,6 +667,9 @@ set(libos_srcs
   os/bluestore/FreelistManager.cc
   os/bluestore/KernelDevice.cc
   os/bluestore/StupidAllocator.cc
+        # For OCSSD
+        os/bluestore/OCDevice.cc
+        #os/bluestore/ocssd_aio.cc
   os/fs/FS.cc
   ${libos_xfs_srcs})
 if(${HAVE_LIBFUSE})
@@ -708,7 +714,14 @@ set(ROCKSDB_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/src/rocksdb/include)
 
 add_subdirectory(kv)
 
+### For OCSSD
+add_subdirectory(libocssd)
+
+
+
 add_library(os STATIC ${libos_srcs} $<TARGET_OBJECTS:kv_objs>)
+## For OCSSD
+target_link_libraries(os lightnvm)
 if(${HAVE_LIBAIO})
   target_link_libraries(os aio)
 endif(${HAVE_LIBAIO})
@@ -726,6 +739,10 @@ if(WITH_SPDK)
     ${PCIACCESS_INCLUDE_DIR})
 endif(WITH_SPDK)
 target_link_libraries(os kv)
+
+add_executable(demo
+        os/demo.cc)
+target_link_libraries(demo os common)
 
 set(cls_references_files objclass/class_api.cc)
 add_library(cls_references_objs OBJECT ${cls_references_files})
@@ -968,7 +985,7 @@ endif(${ENABLE_SHARED})
   target_link_libraries(mount.ceph keyutils)
 
   install(TARGETS ceph-syn DESTINATION bin)
-  install(TARGETS mount.ceph DESTINATION ${CMAKE_INSTALL_SBINDIR})
+  install(TARGETS mount.ceph DESTINATION ${sbindir})
 
   if(HAVE_LIBFUSE)
     set(ceph_fuse_srcs
@@ -978,12 +995,12 @@ endif(${ENABLE_SHARED})
     target_link_libraries(ceph-fuse ${ALLOC_LIBS} ${FUSE_LIBRARIES} client global)
     set_target_properties(ceph-fuse PROPERTIES COMPILE_FLAGS "-I${FUSE_INCLUDE_DIRS}")
     install(TARGETS ceph-fuse DESTINATION bin)
-    install(PROGRAMS mount.fuse.ceph DESTINATION ${CMAKE_INSTALL_SBINDIR})
+    install(PROGRAMS mount.fuse.ceph DESTINATION ${sbindir})
   endif(HAVE_LIBFUSE)
 endif(WITH_LIBCEPHFS)
 
 set(journal_srcs
-  journal/AsyncOpTracker.cc
+  #journal/AsyncOpTracker.cc
   journal/Entry.cc
   journal/Future.cc
   journal/FutureImpl.cc
@@ -1016,6 +1033,10 @@ if(${WITH_RBD})
     tools/rbd_mirror/image_replayer/BootstrapRequest.cc
     tools/rbd_mirror/image_replayer/CloseImageRequest.cc
     tools/rbd_mirror/image_replayer/CreateImageRequest.cc
+
+    tools/rbd_mirror/image_replayer/EventPreprocessor.cc ## add
+    tools/rbd_mirror/image_replayer/IsPrimaryRequest.cc  ## add
+
     tools/rbd_mirror/image_replayer/OpenImageRequest.cc
     tools/rbd_mirror/image_replayer/OpenLocalImageRequest.cc
     tools/rbd_mirror/image_replayer/ReplayStatusFormatter.cc
@@ -1123,12 +1144,14 @@ if(${WITH_RADOSGW})
     rgw/rgw_frontend.cc
     rgw/rgw_gc.cc
     rgw/rgw_http_client.cc
+          rgw/rgw_http_client_curl.cc # ADD
     rgw/rgw_json_enc.cc
     rgw/rgw_keystone.cc
     rgw/rgw_ldap.cc
     rgw/rgw_loadgen.cc
     rgw/rgw_log.cc
     rgw/rgw_metadata.cc
+
     rgw/rgw_multi.cc
     rgw/rgw_multi_del.cc
     rgw/rgw_sync.cc

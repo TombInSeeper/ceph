@@ -1,6 +1,7 @@
 # radostest 
 set(libradostest_srcs 
-  test.cc 
+  test.cc
+        test_common.cc # add
   TestCase.cc)
 add_library(radostest STATIC ${libradostest_srcs})
 set_target_properties(radostest PROPERTIES COMPILE_FLAGS ${UNITTEST_CXX_FLAGS})

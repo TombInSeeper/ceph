@@ -558,6 +558,62 @@ private:
   std::mutex reap_lock;
   list<CollectionRef> removed_collections;
 
+  //For OCSSD
+  std::mutex submit_lock;
+  uint64_t submit_seq = 0;
+
+  //For GC
+  constexpr static uint32_t  N_SLOTS = (384*1024*1024) / (4096);
+  struct SegmentSummary{
+      std::bitset<N_SLOTS> invalid_bitmap;
+      /*struct parent_t{
+          coll_t     cid;
+          ghobject_t oid;
+          uint32_t   off;
+      };
+      parent_t  parents[N_SLOTS];*/
+  };
+
+  struct GCThread : public Thread {
+      BlueStore *store;
+      Cond cond;
+      Mutex lock;
+      bool stop = false;
+
+  public:
+    enum GC_POLICY{
+        NONE   = 0x0,
+        STUPID = 0x1,
+        GREEDY = 0x2
+    };
+    uint8_t gc_policy = STUPID;
+    interval_set<uint64_t> invalid_extents;
+    SegmentSummary  *segmentSummarys = nullptr;
+
+    void may_trigger_gc( bool timeout , std::set<uint32_t> &sid);
+
+    explicit GCThread(BlueStore *s)
+          : store(s),
+            lock("BlueStore::GCThread::lock") {}
+      void *entry() override;
+      void init() {
+        ceph_assert(stop == false);
+        create("bstore_gc");
+      }
+     void shutdown() {
+        lock.Lock();
+        stop = true;
+        cond.Signal();
+        lock.Unlock();
+        join();
+      }
+  } gc_thread;
+
+
+  //
+  void discard_to_gctrd(interval_set<uint64_t> &p);
+
+
 
   // --------------------------------------------------------
   // private methods
@@ -576,7 +632,7 @@ private:
   void _close_bdev();
   int _open_db(bool create);
   void _close_db();
-  int _open_alloc();
+  int _open_alloc(bool create);
   void _close_alloc();
   int _open_collections(int *errors=0);
   void _close_collections();
@@ -896,6 +952,15 @@ private:
 		uint64_t offset, uint64_t length,
 		bufferlist& bl,
 		uint32_t fadvise_flags);
+// For OCSSD
+        int _do_ocssd_write(TransContext *txc,
+                      CollectionRef &c,
+                      OnodeRef o,
+                      uint64_t offset, uint64_t length,
+                      bufferlist& bl,
+                      uint32_t fadvise_flags);
+
+
   int _touch(TransContext *txc,
 	     CollectionRef& c,
 	     OnodeRef& o);

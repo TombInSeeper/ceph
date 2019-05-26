@@ -87,6 +87,8 @@ GTAGS
 
 # common cmake build dir
 /build
+/cmake-build-*
+/build-*
 
 # editor backup files etc.
 \#*\#

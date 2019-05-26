@@ -16,7 +16,7 @@
 
 #include <libgen.h>
 #include <unistd.h>
-
+#include "OCDevice.h"
 #include "KernelDevice.h"
 #if defined(HAVE_SPDK)
 #include "NVMEDevice.h"
@@ -54,6 +54,28 @@ BlockDevice *BlockDevice::create(const string& path, aio_callback_t cb, void *cb
       type = "ust-nvme";
   }
   dout(1) << __func__ << " path " << path << " type " << type << dendl;
+
+
+
+    // May be ocssd prefix
+  std::string ocssd_prefix , p;
+  if( path.size() > 6  && g_conf->bdev_ocssd_enable) {
+    ocssd_prefix = path.substr(0, 6);
+    p = path.substr(6,path.size());
+    if (ocssd_prefix == "ocssd:")
+    {
+      type = "ocssd";
+      dout(10) << __func__ << " Probe main block device : " << p << dendl;
+      return new OCDevice(cb,cbpriv);
+    }
+    else
+    {
+      dout(10) << __func__ << " Not OCSSD main block device : " << path << dendl;
+    }
+  }
+
+
+
 
   if (type == "kernel") {
     return new KernelDevice(cb, cbpriv);
