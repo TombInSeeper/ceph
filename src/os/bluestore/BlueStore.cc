@@ -1006,7 +1006,7 @@ int BlueStore::_open_alloc( bool create )
      interval_set<uint64_t> freelist_set , written_set , invalid_set;
      for (auto& p : fl) {
           freelist_set.insert(p.first, p.second);
-      }
+     }
      bdev->get_written_extents(written_set);
      invalid_set.intersection_of(freelist_set,written_set);
   
@@ -1233,6 +1233,7 @@ int BlueStore::_open_db(bool create)
       goto free_bluefs;
     }
     if (create) {
+        ceph_assert(bdev);
       // note: we might waste a 4k block here if block.db is used, but it's
       // simpler.
       if(!g_conf ->bdev_ocssd_enable) {
@@ -1246,10 +1247,10 @@ int BlueStore::_open_db(bool create)
           bluefs->add_block_extent(bluefs_shared_bdev, BLUEFS_START, initial);
           bluefs_extents.insert(BLUEFS_START, initial);
       }
-     else
+      else
       {
           uint64_t reserved = g_conf->bdev_ocssd_segment_reserved * 
-		g_conf->bdev_ocssd_segment_size;
+		  bdev->get_segment_size();
           bluefs_extents.insert(BLUEFS_START, reserved - BLUEFS_START );
       }
     }
@@ -3968,7 +3969,7 @@ void BlueStore::_txc_update_fm(TransContext *txc)
 void BlueStore::discard_to_gctrd(interval_set<uint64_t> &p) {
   gc_thread.lock.Lock();
   gc_thread.invalid_extents.insert(p);
-  if(gc_thread.invalid_extents.size() > g_conf->bdev_ocssd_segment_size)
+  if(gc_thread.invalid_extents.size() >= bdev->get_segment_size())
     gc_thread.cond.SignalOne();
   gc_thread.lock.Unlock();
 }
@@ -3984,7 +3985,8 @@ void BlueStore::GCThread::may_trigger_gc( bool timeout , std::set<uint32_t> &sid
         {
           victim_seg_id = sid;
           interval_set<uint64_t> p;
-          p.insert(victim_seg_id * g_conf->bdev_ocssd_segment_size , g_conf->bdev_ocssd_segment_size );
+          p.insert(victim_seg_id * store->bdev->get_segment_size() ,
+                  store->bdev->get_segment_size() );
           //tell bdev to discard (erase) the entire segment;
           store->bdev->queue_discard(p);
           it->invalid_bitmap.reset();
@@ -4002,7 +4004,8 @@ void *BlueStore::GCThread::entry()
 {
   lock.Lock();
   interval_set<uint64_t> invalid_set_local;
-  segmentSummarys = new SegmentSummary[store->bdev->get_size() / g_conf->bdev_ocssd_segment_size];
+  segmentSummarys = new
+          SegmentSummary[store->bdev->get_size() / store->bdev->get_segment_size()];
 
   bool timeout = false;
   while (!stop) {
@@ -4020,16 +4023,14 @@ void *BlueStore::GCThread::entry()
     std::set<uint32_t> sids;
     {
       //MARK INVALID
-     for(auto it = invalid_set_local.begin() ; it != invalid_set_local.end(); it++)
-       {
+     for(auto it = invalid_set_local.begin() ; it != invalid_set_local.end(); it++) {
         auto off = it.get_start();
         auto len = it.get_len();
         auto l = len;
         auto o = off;
-        while(l)
-          {
-          auto sid = o / g_conf->bdev_ocssd_segment_size;
-          auto idx = ( o % g_conf->bdev_ocssd_segment_size ) / 0x1000 ;
+        while(l) {
+          auto sid = o / store->bdev->get_segment_size();
+          auto idx = ( o % store->bdev->get_segment_size()) / 0x1000 ;
           segmentSummarys[sid].invalid_bitmap.set(idx);
           o += 0x1000;
           l -= 0x1000;
@@ -6016,8 +6017,13 @@ int BlueStore::_do_ocssd_write(TransContext *txc,
     dout(40) << "after:\n";
     bl.hexdump(*_dout);
     *_dout << dendl;
-
+  
+    //size_t length = bl.length();
+ 
     bdev->aio_write(it->second.offset,bl,&(txc->ioc),false);
+    
+    //}
+    
     it->second.clear_flag(bluestore_extent_t::FLAG_UNWRITTEN);
 
     //dout(0) << __func__ << "txc->allocated:" << txc->allocated << dendl;

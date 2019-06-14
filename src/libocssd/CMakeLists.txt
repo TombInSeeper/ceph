@@ -69,7 +69,8 @@ set(HEADER_FILES
 	src/nvm_spec.h
 	src/nvm_vblk.h
 		#---------------------------
-	objssd-nvme.h
+		ocssd.h
+		ocssd_util.h
     )
 
 set(SOURCE_FILES
@@ -90,7 +91,8 @@ set(SOURCE_FILES
 
 
 #----------------------------
-	objssd-nvme.c
+		ocssd.c
+		ocssd_util.c
 	)
 
 include_directories(utils)
@@ -102,6 +104,14 @@ set(LNAME "lightnvm")
 add_library(${LNAME} STATIC ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(${LNAME} aio pthread rt tcmalloc)
 set_target_properties(${LNAME} PROPERTIES OUTPUT_NAME ${LNAME})
+
+add_executable(ocssd_cli ocssd_cmd_tool.c)
+target_link_libraries(ocssd_cli ${LNAME})
+
+add_executable(ocssd_test ocssd_test.c ocssd_test.h)
+target_link_libraries(ocssd_test tcmalloc ${LNAME})
+
+
 
 add_library(lightnvm_so SHARED ${HEADER_FILES} ${SOURCE_FILES})
 target_link_libraries(lightnvm_so aio pthread rt tcmalloc)

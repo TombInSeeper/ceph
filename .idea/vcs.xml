@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ceph-erasure-code-corpus" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ceph-object-corpus" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/civetweb" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/erasure-code/jerasure/gf-complete" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/erasure-code/jerasure/jerasure" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/gmock" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/gmock/gtest" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/rocksdb" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/spdk" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/xxHash" vcs="Git" />
+  </component>
+</project>

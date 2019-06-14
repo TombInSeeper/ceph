@@ -134,6 +134,8 @@ public:
   virtual int init_disk() { return 0 ;};
   virtual int get_written_extents( interval_set<uint64_t>& p ) { return 0 ;};
   virtual int queue_discard(interval_set<uint64_t> &p) { return 0; };
+  virtual uint32_t get_segment_size() { return 0; };
+
 
 };
 

@@ -29,29 +29,16 @@ public:
     {
 
     }
-
     void*   aio_callback_priv = NULL;
     aio_callback_t aio_callback = NULL;
 
-
 private:
-
-
-    uint64_t                        size = 0;
-
-
-
-
-
     std::list<IOContext*>           aio_queue;
     std::condition_variable         aio_cv;
     std::mutex                      aio_submit_mtx;
-
     atomic_uint                     pre_alloc_seq = {0};
     atomic_uint                     submitted_seq = {0};
     bool                            aio_stop = false;
-
-
 
     struct AioThread : public Thread {
         OCDevice *ocDevice = nullptr;
@@ -77,9 +64,7 @@ private:
     int                             fd  = -1;
     //OCSSD
     struct ocssd_t                  *ocssd = nullptr;
-
     void _aio_start();
-
     void _aio_stop();
 
 
@@ -112,13 +97,9 @@ public:
 
     int get_written_extents( interval_set<uint64_t>& p ) override;
 
+    uint32_t get_segment_size() override ;
 
     //Helpers
-    //uint64_t get_reserve_size() const  override { return 1 * OCSSD_SEG_SIZE; }
-    //void get_written_extents(interval_set<uint64_t> &p) override ;
-    //int  collect_metadata(const std::string &prefix, map<std::string, std::string> *pm) const override;
-
-
 
     //Do nothing
     int flush() override { return 0 ; }

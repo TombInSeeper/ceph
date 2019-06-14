@@ -453,7 +453,8 @@ if [ "$start_mon" -eq 1 ]; then
         mon data avail warn = 10
         mon data avail crit = 1
 
-        ms_type = async
+      ms_type = async
+      
 
       osd_enable_op_tracker = false         ;MARK this option is mentioned by report
       throttler_perf_counter = false        ;MARK this option is mentioned by report
@@ -461,6 +462,7 @@ if [ "$start_mon" -eq 1 ]; then
 
       auth supported = none
 
+      bluestore_rocksdb_options = "max_write_buffer_number=16,min_write_buffer_number_to_merge=16,recycle_log_file_num=16,compaction_threads=8,write_buffer_size=83886080"
 
       ;MARK this option is mentioned by report
       debug_lockdep = 0/0
@@ -491,7 +493,8 @@ if [ "$start_mon" -eq 1 ]; then
       rgw frontends = fastcgi, civetweb port=$CEPH_RGW_PORT
       rgw dns name = localhost
       filestore fd cache size = 32
-      run dir = $CEPH_OUT_DIR
+      
+ 	run dir = $CEPH_OUT_DIR
       enable experimental unrecoverable data corrupting features = bluestore rocksdb mstype-async
 EOF
 if [ "$lockdep" -eq 1 ] ; then
@@ -539,8 +542,19 @@ $DAEMONOPTS
         osd class tmp = out
         osd class dir = $OBJCLASS_PATH
 
+	osd_op_num_shards = 8
+	osd_op_num_threads_per_shard=1
+
 	osd pool default min size = 1
         
+	objecter_inflight_ops = 102400
+	objecter_inflight_op_bytes = 104857600
+	ms_dispatch_throttle_bytes = 104857600
+
+	osd_client_message_size_cap = 0
+	osd_client_message_cap = 0
+
+
 	bluestore block create = true
         bluestore fsck on mount = true
         bluestore block db size = 67108864
@@ -551,9 +565,13 @@ $DAEMONOPTS
 
         bluestore_min_alloc_size = 4096
 
-        bdev_ocssd_driver = mock
+        bdev_ocssd_driver = libocssd
         bdev_ocssd_enable = enable
-        bdev_ocssd_device = /dev/nvme0n1
+        ;bdev_ocssd_device = /dev/nvme0n1
+
+	bluestore_cache_size = 0
+	bluestore_cache_size_hdd = 0
+	bluestore_cache_size_ssd = 0
 
 
 $COSDDEBUG
@@ -569,8 +587,7 @@ $extra_conf
 $DAEMONOPTS
 $CMONDEBUG
 $extra_conf
-        mon cluster log file = $CEPH_OUT_DIR/cluster.mon.\$id.log
-[global]
+        mon cluster log file = $CEPH_OUT_DIR/cluster.mon.\$id.log..i.
 $extra_conf
 EOF
 		fi
@@ -646,6 +663,7 @@ if [ "$start_osd" -eq 1 ]; then
 		    cat <<EOF >> $conf_fn
 [osd.$osd]
         host = $HOSTNAME
+        bdev_ocssd_device = /dev/nvme0n1p$(($osd+1))
 EOF
 	    fi
 

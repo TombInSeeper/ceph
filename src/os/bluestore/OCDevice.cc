@@ -13,7 +13,7 @@
 #include <x86intrin.h>
 
 extern "C" {
-#include "libocssd/objssd-nvme.h"
+#include "libocssd/ocssd.h"
 };
 
 
@@ -21,8 +21,8 @@ extern "C" {
 
 #define     OCSSD_IO_READ       (0x1)
 #define     OCSSD_IO_WRITE      (0x2)
-#define     OCSSD_MAX_IO_SIZE   (32*1024ULL)
-#define     OCSSD_SEG_SIZE      (384*1024*1024ULL)
+#define     OCSSD_MAX_IO_SIZE   (96*1024ULL)
+
 
 
 #undef dout_context
@@ -31,7 +31,7 @@ extern "C" {
 #undef dout_prefix
 #define dout_prefix *_dout << "OCDevice "
 
-#define OCSSD_DEBUG 1
+#define OCSSD_DEBUG 0
 #define DOUT_LEVEL  0
 
 
@@ -66,19 +66,12 @@ int OCDevice::open( std::string path)
 
    if(g_conf->bdev_ocssd_driver == "libocssd") {
         ocssd = ocssd_open(g_conf->bdev_ocssd_device.c_str());
-    }
-    else
-    {
-        ocssd = (struct ocssd_t* )malloc(sizeof( struct ocssd_t));
-        ifstream fp("/tmp/ceph_core", ios::in | ios::binary);
-        fp.read((char*)(&ocssd->pm_data),sizeof(ocssd->pm_data));
-    }
+   }
 
     // aio_start
     _aio_start();
-
-    dout(1) << __func__ << "..done.. segs_num:" << ocssd->pm_data.nr_sblks << "" << dendl;
-
+    dout(1) << __func__ << "..done.. segs_num:"
+        << ocssd->this_partition->nr_vblks<< "" << dendl;
 
     return 0;
 }
@@ -96,12 +89,12 @@ void OCDevice::close() {
         // write_back pm_data
         ocssd_close(ocssd);
     }
-    else
-    {
-        ofstream fp("/tmp/ceph_core",ios::out | ios::binary);
-        fp.write((char*)(&ocssd->pm_data),sizeof(ocssd->pm_data));
-        free(ocssd);
-    }
+//    else
+//    {
+//        ofstream fp("/tmp/ceph_core",ios::out | ios::binary);
+//        fp.write((char*)(&ocssd->pm_data),sizeof(ocssd->pm_data));
+//        free(ocssd);
+//    }
 
     ::close(fd);
 
@@ -126,9 +119,7 @@ int OCDevice::aio_zero(uint64_t off, uint64_t len, IOContext *ioc)
 
 uint64_t OCDevice::get_size() const {
 
-    dout(DOUT_LEVEL) << __func__ << ",blks:" << ocssd->pm_data.nr_sblks << 
-		",size=" << pretty_si_t(ocssd->pm_data.nr_sblks * OCSSD_SEG_SIZE) << dendl;
-    return ocssd->pm_data.nr_sblks * OCSSD_SEG_SIZE;
+    return ocssd->vblk_size * ocssd->this_partition->nr_vblks;
 } ;
 
 uint64_t OCDevice::get_block_size() const {
@@ -136,22 +127,26 @@ uint64_t OCDevice::get_block_size() const {
 };
 
 int OCDevice::init_disk() {
-    if(g_conf->bdev_ocssd_driver == "libocssd") {
-        dout(1) << __func__ << "..doing..reset device..."<< dendl;
-        ocssd_reset(ocssd);
-    }
-    else
-    {
-        memset(&ocssd->pm_data,0,sizeof(ocssd->pm_data));
-        ocssd->pm_data.nr_sblks = 100;
-        for(int i = 0 ; i < 100; ++i ) {
-            ocssd->pm_data.sblk_map[i] = i;
-            ocssd->pm_data.sblk_ofst[i].fin_ofst = 0;
-        }
-        ofstream fp("/tmp/ceph_core",ios::out | ios::binary);
-        fp.write((char*)(&ocssd->pm_data),sizeof(ocssd->pm_data));
-    }
-    dout(1) << __func__ << "..done.."  << dendl;
+//    if(g_conf->bdev_ocssd_driver == "libocssd") {
+//        dout(1) << __func__ << ",erasing the device..."<< dendl;
+//        for(size_t i = 0 ; i < ocssd->this_partition->nr_vblks ; ++i){
+//            ocssd_erase(ocssd,i);
+//        }
+//    }
+//    else
+//    {
+//        memset(&ocssd->pm_data,0,sizeof(ocssd->pm_data));
+//        ocssd->pm_data.nr_sblks = 100;
+//        for(int i = 0 ; i < 100; ++i ) {
+//            ocssd->pm_data.sblk_map[i] = i;
+//            ocssd->pm_data.sblk_ofst[i].fin_ofst = 0;
+//        }
+//        ofstream fp("/tmp/ceph_core",ios::out | ios::binary);
+//        fp.write((char*)(&ocssd->pm_data),sizeof(ocssd->pm_data));
+//    }
+    ceph_assert(ocssd->ocssd_meta->magic == OCSSD_META_MAGIC);
+    dout(1) << __func__ << ",done"  << dendl;
+
 }
 
 int OCDevice::read(uint64_t off, uint64_t len, bufferlist *pbl, IOContext *ioc , bool buffered) {
@@ -196,12 +191,12 @@ int OCDevice::read(uint64_t off, uint64_t len, bufferlist *pbl, IOContext *ioc ,
         ocssd_read(ocssd , (struct cmd_ctx*)aio.ocssd_ctx);
         ocssd_destory_ctx ((struct cmd_ctx*)aio.ocssd_ctx);
     }
-    else
-    {
-        dout(DOUT_LEVEL) << __func__ << read_seq++ << ",[READ]" << std::hex <<
-                         "[0x" << aio.lba_off << "~" << aio.lba_len << "]" <<  std::dec << dendl;
-        ::pread(fd,p.c_str(),aio.lba_len,aio.lba_off);
-    }
+//    else
+//    {
+//        dout(DOUT_LEVEL) << __func__ << read_seq++ << ",[READ]" << std::hex <<
+//                         "[0x" << aio.lba_off << "~" << aio.lba_len << "]" <<  std::dec << dendl;
+//        ::pread(fd,p.c_str(),aio.lba_len,aio.lba_off);
+//    }
     pbl->append(std::move(p));
     //dout(10) << __func__ << "..done.." << dendl;
     return 0;
@@ -334,26 +329,26 @@ void OCDevice::aio_thread_work()
                     ocssd_write(ocssd, (struct cmd_ctx*)aio->ocssd_ctx);
                     ocssd_destory_ctx((struct cmd_ctx*)aio->ocssd_ctx);
                 }
-                else
-                {
-                    dout(DOUT_LEVEL) << __func__ << ",[WIRTE]" << write_seq++   << std::hex <<
-                     ",[0x" << aio->lba_off << "~" << aio->lba_len << "]" <<  std::dec << dendl;
-                    ::pwrite(fd,aio->bl.c_str(),aio->lba_len,aio->lba_off);
-                }
-
-                dout(10) << __func__ << std::hex <<  " off=" << aio->lba_off << " len=" << aio->lba_len << std::dec << " done.." << dendl;
-
-                auto id = aio->lba_off / OCSSD_SEG_SIZE;
-                auto iofst = aio->lba_off % OCSSD_SEG_SIZE + aio->lba_len;
-                if(likely (iofst <= OCSSD_SEG_SIZE) )
-                {
-                    ocssd->pm_data.sblk_ofst[id].fin_ofst += aio->lba_len;
-                }
-                else
-                {
-                    ocssd->pm_data.sblk_ofst[id].fin_ofst = OCSSD_SEG_SIZE;
-                    ocssd->pm_data.sblk_ofst[id + 1].fin_ofst = iofst - OCSSD_SEG_SIZE;
-                }
+//                else
+//                {
+//                    dout(DOUT_LEVEL) << __func__ << ",[WIRTE]" << write_seq++   << std::hex <<
+//                     ",[0x" << aio->lba_off << "~" << aio->lba_len << "]" <<  std::dec << dendl;
+//                    ::pwrite(fd,aio->bl.c_str(),aio->lba_len,aio->lba_off);
+//                }
+//
+//                dout(10) << __func__ << std::hex <<  " off=" << aio->lba_off << " len=" << aio->lba_len << std::dec << " done.." << dendl;
+//
+//                auto id = aio->lba_off / OCSSD_SEG_SIZE;
+//                auto iofst = aio->lba_off % OCSSD_SEG_SIZE + aio->lba_len;
+//                if(likely (iofst <= OCSSD_SEG_SIZE) )
+//                {
+//                    ocssd->pm_data.sblk_ofst[id].fin_ofst += aio->lba_len;
+//                }
+//                else
+//                {
+//                    ocssd->pm_data.sblk_ofst[id].fin_ofst = OCSSD_SEG_SIZE;
+//                    ocssd->pm_data.sblk_ofst[id + 1].fin_ofst = iofst - OCSSD_SEG_SIZE;
+//                }
             }
 
             if(likely(ioc->priv != nullptr))
@@ -367,35 +362,37 @@ void OCDevice::aio_thread_work()
     }
 }
 
-int OCDevice::get_written_extents(interval_set<uint64_t> &p) {
-
-    int i ;
-    for ( i = 0 ; i < ocssd->pm_data.nr_sblks ; ++i)
-     {
-      uint32_t ofst = ocssd->pm_data.sblk_ofst[i].fin_ofst;
-      if(ofst)
-        {
-            p.insert( (uint32_t)i * OCSSD_SEG_SIZE , ofst);
-        }
-     }
-
+int OCDevice::get_written_extents(interval_set<uint64_t> &p)
+{
+    for ( int i = 0 ; i < ocssd->this_partition->nr_vblks ; ++i) {
+      uint32_t ofst = ocssd->this_partition->vblks[i].write_pos;
+      if(ofst) {
+          p.insert( (uint32_t)i * ocssd->vblk_size ,
+                  ofst);
+      }
+    }
     return 0;
 }
 
 int OCDevice::queue_discard(interval_set<uint64_t> &p)
 {
-  for(auto it = p.begin() ; it != p.end() ; ++it)
-  {
-   ceph_assert(it.get_start() % OCSSD_SEG_SIZE == 0);
-   ceph_assert(it.get_len() % OCSSD_SEG_SIZE == 0);
-   uint64_t bg_id = it.get_start() / OCSSD_SEG_SIZE;
-   uint64_t end_id = (it.get_start()+it.get_len()) / OCSSD_SEG_SIZE;
-   uint64_t i;
-   for (i= bg_id ; i < end_id ;++i)
-    {
-      ocssd_erase( ocssd , i);
-    }
+
+  const uint32_t  OCSSD_SEG_SIZE = ocssd->vblk_size;
+
+  for(auto it = p.begin() ; it != p.end() ; ++it) {
+       ceph_assert(it.get_start() % OCSSD_SEG_SIZE == 0);
+       ceph_assert(it.get_len() % OCSSD_SEG_SIZE == 0);
+       uint64_t bg_id = it.get_start() / OCSSD_SEG_SIZE;
+       uint64_t end_id = (it.get_start()+it.get_len()) / OCSSD_SEG_SIZE;
+       uint64_t i;
+       for (i= bg_id ; i < end_id ;++i) {
+          ocssd_erase( ocssd , i);
+       }
   }
 
   return 0;
+}
+
+uint32_t OCDevice::get_segment_size() {
+    return (uint32_t )ocssd->vblk_size;
 }

@@ -377,8 +377,8 @@ struct nvm_dev * nvm_dev_openf(const char *dev_path, int flags) {
 }
 
 
-static dev_open_times = 0 ;
-static dev_close_times = 0 ;
+static int dev_open_times = 0 ;
+static int dev_close_times = 0 ;
 
 struct nvm_dev *nvm_dev_open(const char *dev_path)
 {
