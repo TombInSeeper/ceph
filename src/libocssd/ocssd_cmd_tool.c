@@ -106,13 +106,33 @@ int init_ocssd( struct init_opt_t *opt)
     _init_blk_map(ocssd,global_blk_map,opt->nr_sblks);
     LOG_DEBUG("generate block map...over.");
 
+
+    double lat[opt->nr_sblks];
+    int n = 0;
+
     for(int i = 0 ; i < opt->nr_sblks ;++i){
         struct nvm_addr addr;
         memset(&addr,0,sizeof(addr));
         addr.g.blk = global_blk_map[i];
+
+        struct timespec t1,t2;
+        clock_gettime(CLOCK_MONOTONIC_RAW , &t1);
         nvm_addr_erase_sb(ocssd->dev,&addr,1,0,NULL);
+        clock_gettime(CLOCK_MONOTONIC_RAW , &t2);
+
+        double duration = (double) (t2.tv_sec - t1.tv_sec) +
+                          (double)(t2.tv_nsec - t1.tv_nsec) / 1e9 ;
+
+        lat[n++]=duration * 1e6;
     }
     LOG_DEBUG("erase all super blocks...over.");
+
+    double avg_lat = 0.0;
+    for(int i = 0 ; i < opt->nr_sblks ; ++i){
+        avg_lat += lat[i] / opt->nr_sblks;
+    }
+    LOG_DEBUG("<erase_sb avg_lat>:%.1lf us" , avg_lat);
+
 
 
     //alloc memory for meta data

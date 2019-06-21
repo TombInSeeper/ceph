@@ -3,16 +3,17 @@
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
     <generated>
       <config projectName="Ceph" targetName="test_rados_delete_pools_parallel" />
+      <config projectName="Ceph" targetName="unittest_ceph_crypto" />
       <config projectName="Ceph" targetName="osdc" />
-      <config projectName="Ceph" targetName="test_build_libcommon" />
+      <config projectName="Ceph" targetName="radosgw" />
       <config projectName="Ceph" targetName="ceph-detect-init" />
       <config projectName="Ceph" targetName="ec_lrc" />
       <config projectName="Ceph" targetName="unittest_compression_plugin_snappy" />
       <config projectName="Ceph" targetName="rados_striper_test" />
       <config projectName="Ceph" targetName="ceph_erasure_code_non_regression" />
+      <config projectName="Ceph" targetName="ec_test_jerasure_sse3" />
       <config projectName="Ceph" targetName="cls_timeindex" />
       <config projectName="Ceph" targetName="unittest_texttable" />
-      <config projectName="Ceph" targetName="cls_refcount_client" />
       <config projectName="Ceph" targetName="libradosstriper" />
       <config projectName="Ceph" targetName="ceph_tpbench" />
       <config projectName="Ceph" targetName="osd" />
@@ -21,7 +22,6 @@
       <config projectName="Ceph" targetName="ceph_test_filestore" />
       <config projectName="Ceph" targetName="erasure_code_objs" />
       <config projectName="Ceph" targetName="unittest_time" />
-      <config projectName="Ceph" targetName="unittest_mds_authcap" />
       <config projectName="Ceph" targetName="unittest_osdscrub" />
       <config projectName="Ceph" targetName="radostest" />
       <config projectName="Ceph" targetName="mon" />
@@ -29,12 +29,13 @@
       <config projectName="Ceph" targetName="cls_rgw_client" />
       <config projectName="Ceph" targetName="ceph-client-debug" />
       <config projectName="Ceph" targetName="ceph-fuse" />
+      <config projectName="Ceph" targetName="check" />
       <config projectName="Ceph" targetName="unittest_lru" />
       <config projectName="Ceph" targetName="rbd-replay-prep" />
-      <config projectName="Ceph" targetName="test_c_headers" />
+      <config projectName="Ceph" targetName="test_cls_rgw_meta" />
       <config projectName="Ceph" targetName="unittest_pglog" />
       <config projectName="Ceph" targetName="test_cors" />
-      <config projectName="Ceph" targetName="ceph_test_objectstore" />
+      <config projectName="Ceph" targetName="gmock_main" />
       <config projectName="Ceph" targetName="ceph_test_cls_statelog" />
       <config projectName="Ceph" targetName="cls_rbd_client" />
       <config projectName="Ceph" targetName="unittest_librados_config" />
@@ -45,9 +46,13 @@
       <config projectName="Ceph" targetName="librados" />
       <config projectName="Ceph" targetName="cls_user" />
       <config projectName="Ceph" targetName="ceph_test_rewrite_latency" />
+      <config projectName="Ceph" targetName="unittest_on_exit" />
       <config projectName="Ceph" targetName="ceph_test_rados_api_tier" />
+      <config projectName="Ceph" targetName="build_rocksdb" />
+      <config projectName="Ceph" targetName="global_common_objs" />
       <config projectName="Ceph" targetName="test_cls_rgw_log" />
       <config projectName="Ceph" targetName="ceph_test_librbd_api" />
+      <config projectName="Ceph" targetName="unittest_crypto_init" />
       <config projectName="Ceph" targetName="rbd_types" />
       <config projectName="Ceph" targetName="rbd_internal" />
       <config projectName="Ceph" targetName="osd_mon_objs" />
@@ -55,8 +60,6 @@
       <config projectName="Ceph" targetName="ec_test_shec_neon" />
       <config projectName="Ceph" targetName="ec_jerasure" />
       <config projectName="Ceph" targetName="unittest_encoding" />
-      <config projectName="Ceph" targetName="unittest_interval_set" />
-      <config projectName="Ceph" targetName="ceph_zlib" />
       <config projectName="Ceph" targetName="unittest_compression_snappy" />
       <config projectName="Ceph" targetName="unittest_shunique_lock" />
       <config projectName="Ceph" targetName="ec_test_jerasure_generic" />
@@ -73,12 +76,9 @@
       <config projectName="Ceph" targetName="unittest_mon_moncap" />
       <config projectName="Ceph" targetName="unittest_erasure_code_shec_thread" />
       <config projectName="Ceph" targetName="ec_example" />
-      <config projectName="Ceph" targetName="unittest_blkdev" />
       <config projectName="Ceph" targetName="compressor" />
-      <config projectName="Ceph" targetName="unittest_sloppy_crc_map" />
       <config projectName="Ceph" targetName="ceph_test_librgw_file" />
       <config projectName="Ceph" targetName="unittest_lfnindex" />
-      <config projectName="Ceph" targetName="rbd-mirror" />
       <config projectName="Ceph" targetName="unittest_sharedptr_registry" />
       <config projectName="Ceph" targetName="ceph_test_cls_hello" />
       <config projectName="Ceph" targetName="ceph_test_keyvaluedb" />
@@ -87,46 +87,47 @@
       <config projectName="Ceph" targetName="common" />
       <config projectName="Ceph" targetName="radosgw-object-expirer" />
       <config projectName="Ceph" targetName="unittest_erasure_code_shec_all" />
+      <config projectName="Ceph" targetName="cls_cephfs_client" />
       <config projectName="Ceph" targetName="lightnvm_so" />
       <config projectName="Ceph" targetName="ceph_erasure_code" />
       <config projectName="Ceph" targetName="ceph-kvstore-tool" />
       <config projectName="Ceph" targetName="ceph_test_cls_rgw" />
       <config projectName="Ceph" targetName="unittest_util" />
-      <config projectName="Ceph" targetName="cls_hello" />
+      <config projectName="Ceph" targetName="unittest_sloppy_crc_map" />
       <config projectName="Ceph" targetName="ceph_test_rbd_mirror" />
       <config projectName="Ceph" targetName="unittest_erasure_code_lrc" />
       <config projectName="Ceph" targetName="unittest_rbd_mirror" />
+      <config projectName="Ceph" targetName="ceph-osd" />
       <config projectName="Ceph" targetName="ceph_radosacl" />
-      <config projectName="Ceph" targetName="ec_test_shec_generic" />
       <config projectName="Ceph" targetName="ceph_scratchtoolpp" />
+      <config projectName="Ceph" targetName="cephfstool" />
       <config projectName="Ceph" targetName="unittest_formatter" />
       <config projectName="Ceph" targetName="rgw" />
       <config projectName="Ceph" targetName="unittest_prioritized_queue" />
       <config projectName="Ceph" targetName="rgw_a" />
       <config projectName="Ceph" targetName="gtest_main" />
       <config projectName="Ceph" targetName="unittest_librbd" />
-      <config projectName="Ceph" targetName="cephfs-table-tool" />
       <config projectName="Ceph" targetName="ceph_test_signal_handlers" />
       <config projectName="Ceph" targetName="erasure_code" />
       <config projectName="Ceph" targetName="cls_statelog_client" />
-      <config projectName="Ceph" targetName="ec_test_jerasure_neon" />
-      <config projectName="Ceph" targetName="ec_test_shec_sse3" />
-      <config projectName="Ceph" targetName="unittest_confutils" />
       <config projectName="Ceph" targetName="cls_references_objs" />
+      <config projectName="Ceph" targetName="cls_user_client" />
       <config projectName="Ceph" targetName="unittest_hitset" />
       <config projectName="Ceph" targetName="cython_modules" />
       <config projectName="Ceph" targetName="ceph-objectstore-tool" />
       <config projectName="Ceph" targetName="ceph-mds" />
-      <config projectName="Ceph" targetName="ceph_test_filestore_idempotent" />
+      <config projectName="Ceph" targetName="unittest_tableformatter" />
+      <config projectName="Ceph" targetName="unittest_simple_spin" />
       <config projectName="Ceph" targetName="unittest_context" />
       <config projectName="Ceph" targetName="ceph_objectstore_bench" />
+      <config projectName="Ceph" targetName="ceph_test_librgw_file_cd" />
       <config projectName="Ceph" targetName="crushtool" />
       <config projectName="Ceph" targetName="cls_replica_log_client" />
       <config projectName="Ceph" targetName="unittest_mon_pgmonitor" />
       <config projectName="Ceph" targetName="cls_lock" />
       <config projectName="Ceph" targetName="ceph_test_librgw_file_nfsns" />
-      <config projectName="Ceph" targetName="ec_test_shec_sse4" />
-      <config projectName="Ceph" targetName="ec_fail_to_initialize" />
+      <config projectName="Ceph" targetName="unittest_interval_set" />
+      <config projectName="Ceph" targetName="ec_shec_sse4" />
       <config projectName="Ceph" targetName="ceph_test_rados_api_io" />
       <config projectName="Ceph" targetName="ceph_test_cls_lock" />
       <config projectName="Ceph" targetName="cls_lock_client" />
@@ -134,44 +135,47 @@
       <config projectName="Ceph" targetName="ceph_test_libcephfs" />
       <config projectName="Ceph" targetName="test_rados_open_pools_parallel" />
       <config projectName="Ceph" targetName="radosgw-token" />
-      <config projectName="Ceph" targetName="ceph_test_rados_api_c_read_operations" />
+      <config projectName="Ceph" targetName="unittest_workqueue" />
       <config projectName="Ceph" targetName="simple_server" />
       <config projectName="Ceph" targetName="compressor_objs" />
       <config projectName="Ceph" targetName="cls_timeindex_client" />
       <config projectName="Ceph" targetName="cls_kvs" />
-      <config projectName="Ceph" targetName="unittest_crypto" />
-      <config projectName="Ceph" targetName="cls_log" />
+      <config projectName="Ceph" targetName="cython_rados" />
       <config projectName="Ceph" targetName="cls_journal_client" />
       <config projectName="Ceph" targetName="ocssd_test" />
       <config projectName="Ceph" targetName="ec_missing_entry_point" />
       <config projectName="Ceph" targetName="ceph_test_rgw_token" />
       <config projectName="Ceph" targetName="unittest_crush_wrapper" />
-      <config projectName="Ceph" targetName="unittest_histogram" />
-      <config projectName="Ceph" targetName="unittest_crc32c" />
-      <config projectName="Ceph" targetName="ceph_test_rados_api_striping" />
+      <config projectName="Ceph" targetName="ec_test_shec_sse4" />
+      <config projectName="Ceph" targetName="ec_test_shec_sse3" />
+      <config projectName="Ceph" targetName="unittest_base64" />
       <config projectName="Ceph" targetName="unittest_erasure_code_example" />
+      <config projectName="Ceph" targetName="ceph_test_rados_api_stat" />
       <config projectName="Ceph" targetName="global" />
-      <config projectName="Ceph" targetName="ceph-mon" />
+      <config projectName="Ceph" targetName="ceph_test_rados_api_striping" />
       <config projectName="Ceph" targetName="unittest_escape" />
+      <config projectName="Ceph" targetName="cls_rbd" />
       <config projectName="Ceph" targetName="test_rados_watch_notify" />
+      <config projectName="Ceph" targetName="cls_hello" />
       <config projectName="Ceph" targetName="unittest_compression_zlib" />
       <config projectName="Ceph" targetName="ceph_perf_msgr_server" />
       <config projectName="Ceph" targetName="cls_log_client" />
       <config projectName="Ceph" targetName="cls_journal" />
-      <config projectName="Ceph" targetName="ceph_test_mutate" />
       <config projectName="Ceph" targetName="ceph_test_cls_version" />
       <config projectName="Ceph" targetName="unittest_signals" />
       <config projectName="Ceph" targetName="ceph_test_cls_refcount" />
+      <config projectName="Ceph" targetName="ceph_test_rados" />
+      <config projectName="Ceph" targetName="ec_hangs" />
       <config projectName="Ceph" targetName="ceph_test_mon_msg" />
       <config projectName="Ceph" targetName="cephfs" />
       <config projectName="Ceph" targetName="unittest_erasure_code_plugin_lrc" />
-      <config projectName="Ceph" targetName="radosgw" />
       <config projectName="Ceph" targetName="unittest_mds_types" />
       <config projectName="Ceph" targetName="unittest_pageset" />
       <config projectName="Ceph" targetName="unittest_ecbackend" />
       <config projectName="Ceph" targetName="ceph_test_keys" />
-      <config projectName="Ceph" targetName="unittest_base64" />
-      <config projectName="Ceph" targetName="unittest_erasure_code_shec_arguments" />
+      <config projectName="Ceph" targetName="common_util_obj" />
+      <config projectName="Ceph" targetName="unittest_crc32c" />
+      <config projectName="Ceph" targetName="ceph_test_msgr" />
       <config projectName="Ceph" targetName="unittest_utf8" />
       <config projectName="Ceph" targetName="jerasure_objs" />
       <config projectName="Ceph" targetName="ceph_test_cls_log" />
@@ -185,9 +189,7 @@
       <config projectName="Ceph" targetName="ceph-osdomap-tool" />
       <config projectName="Ceph" targetName="heap_profiler_objs" />
       <config projectName="Ceph" targetName="client" />
-      <config projectName="Ceph" targetName="test_crypto" />
       <config projectName="Ceph" targetName="unittest_erasure_code_isa" />
-      <config projectName="Ceph" targetName="osdmaptool" />
       <config projectName="Ceph" targetName="journal" />
       <config projectName="Ceph" targetName="ceph_test_cls_rbd" />
       <config projectName="Ceph" targetName="unittest_ipaddr" />
@@ -202,10 +204,11 @@
       <config projectName="Ceph" targetName="unittest_run_cmd" />
       <config projectName="Ceph" targetName="ceph_test_filejournal" />
       <config projectName="Ceph" targetName="rbd" />
+      <config projectName="Ceph" targetName="ec_jerasure_sse3" />
       <config projectName="Ceph" targetName="unittest_weighted_priority_queue" />
-      <config projectName="Ceph" targetName="unittest_addrs" />
       <config projectName="Ceph" targetName="ceph_test_stress_watch" />
       <config projectName="Ceph" targetName="unittest_mon_pgmap" />
+      <config projectName="Ceph" targetName="test_build_libcommon" />
       <config projectName="Ceph" targetName="compressor_plugins" />
       <config projectName="Ceph" targetName="mds" />
       <config projectName="Ceph" targetName="mount.ceph" />
@@ -218,9 +221,7 @@
       <config projectName="Ceph" targetName="ceph-authtool" />
       <config projectName="Ceph" targetName="journal_test" />
       <config projectName="Ceph" targetName="kv_objs" />
-      <config projectName="Ceph" targetName="test_cls_rgw_opstate" />
       <config projectName="Ceph" targetName="json_spirit" />
-      <config projectName="Ceph" targetName="unittest_erasure_code_shec" />
       <config projectName="Ceph" targetName="ceph_test_rados_api_cls" />
       <config projectName="Ceph" targetName="ceph_test_objectstore_workloadgen" />
       <config projectName="Ceph" targetName="rbd_replay" />
@@ -233,42 +234,40 @@
       <config projectName="Ceph" targetName="ceph_test_librgw_file_gp" />
       <config projectName="Ceph" targetName="unittest_osd_osdcap" />
       <config projectName="Ceph" targetName="unittest_rocksdb_option" />
+      <config projectName="Ceph" targetName="unittest_mutex_debug" />
       <config projectName="Ceph" targetName="unittest_erasure_code_jerasure" />
       <config projectName="Ceph" targetName="unittest_chain_xattr" />
       <config projectName="Ceph" targetName="ceph_erasure_code_benchmark" />
-      <config projectName="Ceph" targetName="cython_rados" />
+      <config projectName="Ceph" targetName="unittest_confutils" />
+      <config projectName="Ceph" targetName="unittest_admin_socket" />
       <config projectName="Ceph" targetName="parse_secret_objs" />
       <config projectName="Ceph" targetName="common_utf8" />
       <config projectName="Ceph" targetName="ec_shec" />
       <config projectName="Ceph" targetName="unittest_strtol" />
       <config projectName="Ceph" targetName="unittest_osdmap" />
+      <config projectName="Ceph" targetName="lightnvm" />
       <config projectName="Ceph" targetName="ceph-conf" />
-      <config projectName="Ceph" targetName="unittest_bit_vector" />
-      <config projectName="Ceph" targetName="common_util_obj" />
       <config projectName="Ceph" targetName="unittest_erasure_code_plugin_isa" />
       <config projectName="Ceph" targetName="cls_rgw" />
-      <config projectName="Ceph" targetName="unittest_prebufferedstreambuf" />
       <config projectName="Ceph" targetName="unittest_erasure_code_plugin_shec" />
+      <config projectName="Ceph" targetName="test_rgw_ldap" />
       <config projectName="Ceph" targetName="unittest_xlist" />
       <config projectName="Ceph" targetName="unittest_bloom_filter" />
-      <config projectName="Ceph" targetName="global_common_objs" />
+      <config projectName="Ceph" targetName="ec_test_jerasure_neon" />
       <config projectName="Ceph" targetName="ceph_omapbench" />
       <config projectName="Ceph" targetName="os" />
       <config projectName="Ceph" targetName="test_build_librados" />
-      <config projectName="Ceph" targetName="cls_refcount" />
       <config projectName="Ceph" targetName="librbd" />
-      <config projectName="Ceph" targetName="crush" />
       <config projectName="Ceph" targetName="simple_client" />
       <config projectName="Ceph" targetName="unittest_arch" />
       <config projectName="Ceph" targetName="rbd_replay_types" />
       <config projectName="Ceph" targetName="ceph_test_xattr_bench" />
-      <config projectName="Ceph" targetName="unittest_bluefs" />
       <config projectName="Ceph" targetName="ceph_test_rados_api_misc" />
       <config projectName="Ceph" targetName="unittest_erasure_code_plugin" />
       <config projectName="Ceph" targetName="ceph-psim" />
       <config projectName="Ceph" targetName="ceph_test_rados_api_tmap_migrate" />
       <config projectName="Ceph" targetName="unittest_heartbeatmap" />
-      <config projectName="Ceph" targetName="ceph_kvstorebench" />
+      <config projectName="Ceph" targetName="cephfs-table-tool" />
       <config projectName="Ceph" targetName="unittest_io_priority" />
       <config projectName="Ceph" targetName="cls_version_client" />
       <config projectName="Ceph" targetName="ceph_scratchtool" />
@@ -280,63 +279,63 @@
       <config projectName="Ceph" targetName="ceph_test_get_blkdev_size" />
       <config projectName="Ceph" targetName="ec_jerasure_generic" />
       <config projectName="Ceph" targetName="ceph_test_object_map" />
+      <config projectName="Ceph" targetName="cephfs-data-scan" />
       <config projectName="Ceph" targetName="unittest_erasure_code_plugin_jerasure" />
       <config projectName="Ceph" targetName="ceph_test_rados_api_c_write_operations" />
       <config projectName="Ceph" targetName="get_command_descriptions" />
       <config projectName="Ceph" targetName="ceph-disk" />
       <config projectName="Ceph" targetName="ceph_perf_objectstore" />
-      <config projectName="Ceph" targetName="unittest_log" />
       <config projectName="Ceph" targetName="cython_cephfs" />
       <config projectName="Ceph" targetName="ceph_smalliobench" />
       <config projectName="Ceph" targetName="unittest_rbd_replay" />
       <config projectName="Ceph" targetName="ceph-syn" />
       <config projectName="Ceph" targetName="rbd_test" />
-      <config projectName="Ceph" targetName="ceph-osd" />
-      <config projectName="Ceph" targetName="cephfstool" />
-      <config projectName="Ceph" targetName="cephfs-data-scan" />
-      <config projectName="Ceph" targetName="ceph_test_rados" />
+      <config projectName="Ceph" targetName="rbd-mirror" />
+      <config projectName="Ceph" targetName="ceph_kvstorebench" />
+      <config projectName="Ceph" targetName="test_cls_rgw_opstate" />
+      <config projectName="Ceph" targetName="ec_fail_to_initialize" />
       <config projectName="Ceph" targetName="ceph_test_keyvaluedb_iterators" />
       <config projectName="Ceph" targetName="ceph_test_rados_api_lock" />
-      <config projectName="Ceph" targetName="unittest_mutex_debug" />
-      <config projectName="Ceph" targetName="test_rgw_ldap" />
+      <config projectName="Ceph" targetName="test_crypto" />
+      <config projectName="Ceph" targetName="ec_test_shec_generic" />
       <config projectName="Ceph" targetName="unittest_osd_types" />
-      <config projectName="Ceph" targetName="ec_hangs" />
-      <config projectName="Ceph" targetName="ec_shec_sse4" />
+      <config projectName="Ceph" targetName="ceph-mon" />
+      <config projectName="Ceph" targetName="ceph_zlib" />
       <config projectName="Ceph" targetName="ec_shec_sse3" />
       <config projectName="Ceph" targetName="unittest_ceph_compatset" />
       <config projectName="Ceph" targetName="ceph_test_timers" />
-      <config projectName="Ceph" targetName="ceph_test_librgw_file_cd" />
+      <config projectName="Ceph" targetName="unittest_mds_authcap" />
       <config projectName="Ceph" targetName="shec_objs" />
-      <config projectName="Ceph" targetName="unittest_ceph_crypto" />
+      <config projectName="Ceph" targetName="unittest_addrs" />
       <config projectName="Ceph" targetName="ceph_test_keyvaluedb_atomicity" />
-      <config projectName="Ceph" targetName="unittest_simple_spin" />
+      <config projectName="Ceph" targetName="test_c_headers" />
       <config projectName="Ceph" targetName="ceph_test_librbd_fsx" />
-      <config projectName="Ceph" targetName="unittest_admin_socket" />
-      <config projectName="Ceph" targetName="unittest_libcephfs_config" />
+      <config projectName="Ceph" targetName="unittest_erasure_code_shec_arguments" />
       <config projectName="Ceph" targetName="unittest_bluestore_types" />
-      <config projectName="Ceph" targetName="unittest_workqueue" />
-      <config projectName="Ceph" targetName="unittest_safe_io" />
-      <config projectName="Ceph" targetName="unittest_tableformatter" />
-      <config projectName="Ceph" targetName="ceph_snappy" />
+      <config projectName="Ceph" targetName="unittest_bluefs" />
       <config projectName="Ceph" targetName="librados_api" />
+      <config projectName="Ceph" targetName="unittest_safe_io" />
+      <config projectName="Ceph" targetName="ceph_test_mutate" />
+      <config projectName="Ceph" targetName="ceph_snappy" />
+      <config projectName="Ceph" targetName="crush" />
       <config projectName="Ceph" targetName="unittest_shared_cache" />
       <config projectName="Ceph" targetName="osdc_rbd_objs" />
-      <config projectName="Ceph" targetName="unittest_perf_counters" />
+      <config projectName="Ceph" targetName="ceph_test_objectstore" />
       <config projectName="Ceph" targetName="ceph_smalliobenchrbd" />
       <config projectName="Ceph" targetName="krbd_objs" />
       <config projectName="Ceph" targetName="kv" />
       <config projectName="Ceph" targetName="erasure_code_plugins" />
       <config projectName="Ceph" targetName="unittest_bufferlist" />
-      <config projectName="Ceph" targetName="unittest_on_exit" />
-      <config projectName="Ceph" targetName="ceph_test_rados_api_stat" />
+      <config projectName="Ceph" targetName="cls_refcount" />
+      <config projectName="Ceph" targetName="unittest_crypto" />
       <config projectName="Ceph" targetName="mon_common_objs" />
-      <config projectName="Ceph" targetName="unittest_crypto_init" />
+      <config projectName="Ceph" targetName="unittest_histogram" />
       <config projectName="Ceph" targetName="ceph_test_librgw_file_aw" />
-      <config projectName="Ceph" targetName="ceph_test_msgr" />
+      <config projectName="Ceph" targetName="unittest_prebufferedstreambuf" />
       <config projectName="Ceph" targetName="unittest_mds_sessionfilter" />
       <config projectName="Ceph" targetName="rbd_mirror" />
-      <config projectName="Ceph" targetName="cls_user_client" />
-      <config projectName="Ceph" targetName="gmock_main" />
+      <config projectName="Ceph" targetName="osdmaptool" />
+      <config projectName="Ceph" targetName="cls_log" />
       <config projectName="Ceph" targetName="radosgw-admin" />
       <config projectName="Ceph" targetName="ceph_multi_stress_watch" />
       <config projectName="Ceph" targetName="librados-config" />
@@ -344,19 +343,20 @@
       <config projectName="Ceph" targetName="unittest_mime" />
       <config projectName="Ceph" targetName="ceph_test_cls_numops" />
       <config projectName="Ceph" targetName="ec_test_jerasure_sse4" />
-      <config projectName="Ceph" targetName="ec_test_jerasure_sse3" />
-      <config projectName="Ceph" targetName="lightnvm" />
+      <config projectName="Ceph" targetName="cls_refcount_client" />
+      <config projectName="Ceph" targetName="unittest_erasure_code_shec" />
       <config projectName="Ceph" targetName="civetweb_common_objs" />
       <config projectName="Ceph" targetName="ec_jerasure_sse4" />
-      <config projectName="Ceph" targetName="ec_jerasure_sse3" />
+      <config projectName="Ceph" targetName="unittest_log" />
       <config projectName="Ceph" targetName="unittest_ceph_argparse" />
       <config projectName="Ceph" targetName="ceph_test_rgw_manifest" />
       <config projectName="Ceph" targetName="ceph-dencoder" />
-      <config projectName="Ceph" targetName="check" />
-      <config projectName="Ceph" targetName="cls_rbd" />
-      <config projectName="Ceph" targetName="test_cls_rgw_meta" />
+      <config projectName="Ceph" targetName="unittest_perf_counters" />
+      <config projectName="Ceph" targetName="unittest_bit_vector" />
+      <config projectName="Ceph" targetName="ceph_test_filestore_idempotent" />
       <config projectName="Ceph" targetName="ec_jerasure_objs" />
       <config projectName="Ceph" targetName="ceph_test_mon_workloadgen" />
+      <config projectName="Ceph" targetName="unittest_transaction" />
       <config projectName="Ceph" targetName="ceph_test_rados_api_nlist" />
       <config projectName="Ceph" targetName="monmaptool" />
       <config projectName="Ceph" targetName="ceph_bench_log" />
@@ -364,16 +364,16 @@
       <config projectName="Ceph" targetName="unittest_config" />
       <config projectName="Ceph" targetName="rbd_api" />
       <config projectName="Ceph" targetName="unittest_crush" />
-      <config projectName="Ceph" targetName="unittest_transaction" />
+      <config projectName="Ceph" targetName="ceph_test_rados_api_c_read_operations" />
       <config projectName="Ceph" targetName="ceph_test_rbd_mirror_random_write" />
-      <config projectName="Ceph" targetName="cls_cephfs_client" />
+      <config projectName="Ceph" targetName="unittest_libcephfs_config" />
       <config projectName="Ceph" targetName="ceph_smalliobenchdumb" />
       <config projectName="Ceph" targetName="ec_shec_generic" />
       <config projectName="Ceph" targetName="common_mountcephfs_objs" />
       <config projectName="Ceph" targetName="vstart" />
       <config projectName="Ceph" targetName="demo" />
       <config projectName="Ceph" targetName="rbd_mirror_internal" />
-      <config projectName="Ceph" targetName="build_rocksdb" />
+      <config projectName="Ceph" targetName="unittest_blkdev" />
       <config projectName="Ceph" targetName="rbd_replay_ios" />
     </generated>
   </component>
@@ -384,26 +384,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fb8915e6-4b19-4b16-9e97-524121776f7b" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/libocssd/ocssd.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/libocssd/ocssd.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/libocssd/ocssd_cmd_tool.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/libocssd/ocssd_test.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/libocssd/ocssd_test.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/libocssd/ocssd_util.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/libocssd/ocssd_util.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/libocssd/rescan_nvm.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/libocssd/uart.log" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/libocssd/vuart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/boot.sh" beforeDir="false" afterPath="$PROJECT_DIR$/boot.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/common/config_opts.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/common/config_opts.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/libocssd/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/libocssd/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/libocssd/objssd-nvme.c" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/libocssd/objssd-nvme.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/libocssd/src/nvm_dev.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/libocssd/src/nvm_dev.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/os/bluestore/BlockDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/os/bluestore/BlockDevice.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/libocssd/ocssd_cmd_tool.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/libocssd/ocssd_cmd_tool.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/os/bluestore/BlueStore.cc" beforeDir="false" afterPath="$PROJECT_DIR$/src/os/bluestore/BlueStore.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/os/bluestore/KernelDevice.cc" beforeDir="false" afterPath="$PROJECT_DIR$/src/os/bluestore/KernelDevice.cc" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/os/bluestore/OCDevice.cc" beforeDir="false" afterPath="$PROJECT_DIR$/src/os/bluestore/OCDevice.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/os/bluestore/OCDevice.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/os/bluestore/OCDevice.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/vstart.sh" beforeDir="false" afterPath="$PROJECT_DIR$/src/vstart.sh" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
@@ -424,7 +408,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/os/bluestore/BlueStore.cc">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="190">
+            <state relative-caret-position="25124">
               <caret line="1142" column="36" selection-start-line="1142" selection-start-column="36" selection-end-line="1142" selection-end-column="36" />
               <folding>
                 <element signature="e#0#70#0" />
@@ -486,8 +470,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/vstart.sh">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="12562">
-              <caret line="589" column="69" selection-start-line="589" selection-start-column="69" selection-end-line="589" selection-end-column="69" />
+            <state relative-caret-position="12958">
+              <caret line="590" column="69" selection-start-line="590" selection-start-column="69" selection-end-line="590" selection-end-column="69" />
             </state>
           </provider>
         </entry>
@@ -505,7 +489,7 @@
         <entry file="file://$PROJECT_DIR$/src/os/bluestore/OCDevice.cc">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="23">
-              <caret line="221" lean-forward="true" selection-start-line="221" selection-end-line="221" />
+              <caret line="222" selection-start-line="222" selection-end-line="222" />
               <folding>
                 <element signature="e#0#2#0" />
                 <element signature="e#788#961#0" />
@@ -521,11 +505,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/libocssd/ocssd.c">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="572">
-              <caret line="40" lean-forward="true" selection-start-line="40" selection-end-line="40" />
+              <caret line="38" selection-start-line="38" selection-end-line="38" />
               <folding>
                 <element signature="e#70#420#0" />
               </folding>
@@ -536,17 +520,38 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/libocssd/ocssd_util.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-683">
+            <state relative-caret-position="22">
               <caret line="103" column="4" selection-start-line="103" selection-start-column="4" selection-end-line="103" selection-end-column="4" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/libocssd/ocssd_test.h">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/libocssd/ocssd_test.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="287">
-              <caret line="15" column="60" selection-start-line="15" selection-start-column="60" selection-end-line="15" selection-end-column="60" />
+            <state relative-caret-position="550">
+              <caret line="59" column="6" selection-start-line="59" selection-start-column="6" selection-end-line="59" selection-end-column="6" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/libocssd/ocssd_cmd_tool.c">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="531">
+              <caret line="134" selection-start-line="134" selection-end-line="134" />
+              <folding>
+                <element signature="e#0#2#0" />
+                <element signature="e#104#1408#0" />
+                <element signature="e#1411#1512#1" />
+                <element signature="e#5418#5711#0" />
+                <element signature="e#5713#6601#0" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -576,6 +581,7 @@
         <option value="$PROJECT_DIR$/src/os/bluestore/OCDevice.cc" />
         <option value="$PROJECT_DIR$/src/libocssd/ocssd_test.c" />
         <option value="$PROJECT_DIR$/src/libocssd/ocssd.c" />
+        <option value="$PROJECT_DIR$/src/libocssd/ocssd_cmd_tool.c" />
       </list>
     </option>
   </component>
@@ -590,7 +596,7 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds" extendedState="7">
     <option name="y" value="28" />
     <option name="width" value="1348" />
     <option name="height" value="744" />
@@ -601,6 +607,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -643,10 +650,10 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="CMakeSettings" />
@@ -3089,17 +3096,17 @@
       <workItem from="1560503000100" duration="317000" />
       <workItem from="1560504357081" duration="1185000" />
       <workItem from="1560507849378" duration="640000" />
+      <workItem from="1561106706145" duration="1054000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="10580000" />
+    <option name="totallyTimeSpent" value="11634000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="28" width="1600" height="1138" extended-state="6" />
-    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.26903227" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.27290323" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -3110,7 +3117,7 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Database Changes" order="7" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="8" visible="true" weight="0.23061013" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="8" visible="true" weight="0.15098242" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="10" />
       <window_info anchor="bottom" id="CMake" order="11" weight="0.35160288" />
@@ -3183,13 +3190,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/libocssd/ocssd_cmd_tool.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="235">
-          <caret line="126" column="22" selection-start-line="126" selection-start-column="22" selection-end-line="126" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/libocssd/src/nvm_be.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1108">
@@ -3226,48 +3226,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/vstart.sh">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="12562">
-          <caret line="589" column="69" selection-start-line="589" selection-start-column="69" selection-end-line="589" selection-end-column="69" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/os/bluestore/BlueStore.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="12672">
-          <caret line="576" column="9" selection-start-line="576" selection-start-column="9" selection-end-line="576" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/os/bluestore/OCDevice.cc">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="23">
-          <caret line="221" lean-forward="true" selection-start-line="221" selection-end-line="221" />
-          <folding>
-            <element signature="e#0#2#0" />
-            <element signature="e#788#961#0" />
-            <element signature="e#963#1239#0" />
-            <element signature="e#1241#1660#0" />
-            <element signature="e#1662#2140#0" />
-            <element signature="e#2142#2346#0" />
-            <element signature="e#2349#2485#0" />
-            <element signature="e#2487#2590#0" />
-            <element signature="e#2594#2656#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/libocssd/ocssd_util.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-683">
-          <caret line="103" column="4" selection-start-line="103" selection-start-column="4" selection-end-line="103" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/os/bluestore/BlueStore.cc">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="190">
+        <state relative-caret-position="25124">
           <caret line="1142" column="36" selection-start-line="1142" selection-start-column="36" selection-end-line="1142" selection-end-column="36" />
           <folding>
             <element signature="e#0#70#0" />
@@ -3325,19 +3286,75 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/libocssd/ocssd_test.c">
+    <entry file="file://$PROJECT_DIR$/src/vstart.sh">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="287">
-          <caret line="15" column="60" selection-start-line="15" selection-start-column="60" selection-end-line="15" selection-end-column="60" />
+        <state relative-caret-position="12958">
+          <caret line="590" column="69" selection-start-line="590" selection-start-column="69" selection-end-line="590" selection-end-column="69" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/os/bluestore/BlueStore.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="12672">
+          <caret line="576" column="9" selection-start-line="576" selection-start-column="9" selection-end-line="576" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/libocssd/ocssd_test.h">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/libocssd/ocssd_util.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="22">
+          <caret line="103" column="4" selection-start-line="103" selection-start-column="4" selection-end-line="103" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/os/bluestore/OCDevice.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="23">
+          <caret line="222" selection-start-line="222" selection-end-line="222" />
+          <folding>
+            <element signature="e#0#2#0" />
+            <element signature="e#788#961#0" />
+            <element signature="e#963#1239#0" />
+            <element signature="e#1241#1660#0" />
+            <element signature="e#1662#2140#0" />
+            <element signature="e#2142#2346#0" />
+            <element signature="e#2349#2485#0" />
+            <element signature="e#2487#2590#0" />
+            <element signature="e#2594#2656#0" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/libocssd/ocssd.c">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="572">
-          <caret line="40" lean-forward="true" selection-start-line="40" selection-end-line="40" />
+          <caret line="38" selection-start-line="38" selection-end-line="38" />
           <folding>
             <element signature="e#70#420#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/libocssd/ocssd_test.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="550">
+          <caret line="59" column="6" selection-start-line="59" selection-start-column="6" selection-end-line="59" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/libocssd/ocssd_cmd_tool.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="531">
+          <caret line="134" selection-start-line="134" selection-end-line="134" />
+          <folding>
+            <element signature="e#0#2#0" />
+            <element signature="e#104#1408#0" />
+            <element signature="e#1411#1512#1" />
+            <element signature="e#5418#5711#0" />
+            <element signature="e#5713#6601#0" />
           </folding>
         </state>
       </provider>

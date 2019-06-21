@@ -309,12 +309,12 @@ run() {
 
 if [ "$debug" -eq 0 ]; then
     CMONDEBUG='
-	debug mon = 10
-        debug ms = 1'
+	debug mon = 0
+        debug ms = 0'
     COSDDEBUG='
-        debug ms = 1'
+        debug ms = 0'
     CMDSDEBUG='
-        debug ms = 1'
+        debug ms = 0'
 else
     echo "** going verbose **"
     CMONDEBUG='
@@ -451,18 +451,18 @@ if [ "$start_mon" -eq 1 ]; then
         mon osd reporter subtree level = osd
         mon osd full ratio = .99
         mon data avail warn = 10
-        mon data avail crit = 1
+      	mon data avail crit = 1
 
-      ms_type = async
+      	ms_type = async
       
 
-      osd_enable_op_tracker = false         ;MARK this option is mentioned by report
-      throttler_perf_counter = false        ;MARK this option is mentioned by report
-      rocksdb_cache_size = 4294967296
+      	osd_enable_op_tracker = false         ;MARK this option is mentioned by report
+      	throttler_perf_counter = false        ;MARK this option is mentioned by report
+      	rocksdb_cache_size = 4294967296
 
-      auth supported = none
+      	auth supported = none
 
-      bluestore_rocksdb_options = "max_write_buffer_number=16,min_write_buffer_number_to_merge=16,recycle_log_file_num=16,compaction_threads=8,write_buffer_size=83886080"
+      	;bluestore_rocksdb_options = "max_write_buffer_number=4,min_write_buffer_number_to_merge=1,recycle_log_file_num=4,compaction_threads=4,write_buffer_size=1073741824"
 
       ;MARK this option is mentioned by report
       debug_lockdep = 0/0
@@ -474,7 +474,8 @@ if [ "$start_mon" -eq 1 ]; then
       debug_objecter = 0/0
       debug_osd = 0/0
       debug_rados = 0/0
-      debug_bluestore =1/1
+      debug_rocksdb=0/0
+      debug_bluestore =0/0
       debug_rbd = 0/0
       debug_ms = 0/0
       debug_monc = 0/0
@@ -542,7 +543,7 @@ $DAEMONOPTS
         osd class tmp = out
         osd class dir = $OBJCLASS_PATH
 
-	osd_op_num_shards = 8
+	osd_op_num_shards = 2
 	osd_op_num_threads_per_shard=1
 
 	osd pool default min size = 1
@@ -557,10 +558,10 @@ $DAEMONOPTS
 
 	bluestore block create = true
         bluestore fsck on mount = true
-        bluestore block db size = 67108864
+        bluestore block db size = 4294967296
         bluestore block db create = true
-        bluestore block wal size = 134217728
-        bluestore block wal create = true
+        ;bluestore block wal size = 40960000
+        bluestore block wal create = false
 
 
         bluestore_min_alloc_size = 4096

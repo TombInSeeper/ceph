@@ -32,7 +32,7 @@ extern "C" {
 #define dout_prefix *_dout << "OCDevice "
 
 #define OCSSD_DEBUG 0
-#define DOUT_LEVEL  0
+#define DOUT_LEVEL 10
 
 
 static std::atomic_uint read_seq = {0};
@@ -386,6 +386,7 @@ int OCDevice::queue_discard(interval_set<uint64_t> &p)
        uint64_t end_id = (it.get_start()+it.get_len()) / OCSSD_SEG_SIZE;
        uint64_t i;
        for (i= bg_id ; i < end_id ;++i) {
+	  dout(1) << __func__ << ",erase vblk=" << i << dendl;
           ocssd_erase( ocssd , i);
        }
   }

@@ -2473,7 +2473,10 @@ int BlueStore::statfs(struct statfs *buf)
   memset(buf, 0, sizeof(*buf));
   buf->f_blocks = bdev->get_size() / bdev->get_block_size();
   buf->f_bsize = bdev->get_block_size();
-  buf->f_bfree = fm->get_total_free() / bdev->get_block_size();
+  if(g_conf->bdev_ocssd_enable)
+  	buf->f_bfree = alloc->get_free() / bdev->get_block_size();
+  else
+  	buf->f_bfree = fm->get_total_free() / bdev->get_block_size();
   buf->f_bavail = buf->f_bfree;
   dout(20) << __func__ << " free " << pretty_si_t(buf->f_bfree * buf->f_bsize)
 	   << " / " << pretty_si_t(buf->f_blocks * buf->f_bsize) << dendl;
@@ -2678,7 +2681,7 @@ int BlueStore::_do_read(
     buffered = true;
   }
 
-  dout(0) << __func__ << ",oid=" << o->onode.nid << "," << read_seq++ << std::hex << ",0x" << offset << "~" << length << ",size=0x"
+  dout(1) << __func__ << ",oid=" << o->onode.nid << "," << read_seq++ << std::hex << ",0x" << offset << "~" << length << ",size=0x"
 	   << o->onode.size << std::dec << dendl;
 
   bl.clear();
@@ -2762,7 +2765,7 @@ int BlueStore::_do_read(
 	uint64_t front_extra = x_off % block_size;
 	uint64_t r_off = x_off - front_extra;
 	uint64_t r_len = ROUND_UP_TO(x_len + front_extra, block_size);
-	dout(0) << __func__ << "  reading " << r_off << "~" << r_len << dendl;
+	dout(1) << __func__ << "  reading " << r_off << "~" << r_len << dendl;
 	bufferlist t;
 	r = bdev->read(r_off + bp->second.offset, r_len, &t, &ioc, buffered);
 	if (r < 0) {
@@ -2800,7 +2803,7 @@ int BlueStore::_do_read(
   r = bl.length();
 
  out:
-  dout(0) << __func__ << ",over,r=0x" << std::hex <<  r << std::dec <<   dendl;
+  dout(1) << __func__ << ",over,r=0x" << std::hex <<  r << std::dec <<   dendl;
 
   return r;
 }
@@ -3941,24 +3944,24 @@ void BlueStore::_txc_update_fm(TransContext *txc)
   }
   else
   {
-    if(!g_conf->bdev_ocssd_enable) {
-      for (interval_set<uint64_t>::iterator p = txc->released.begin();
-	  p != txc->released.end();
-	  ++p) {
-	dout(20) << __func__ << " release " << p.get_start()
-	  << "~" << p.get_len() << dendl;
+    for (interval_set<uint64_t>::iterator p = txc->released.begin(); p != txc->released.end();  ++p) {
+		dout(20) << __func__ << " release " << p.get_start()
+	  	<< "~" << p.get_len() << dendl;
 	fm->release(p.get_start(), p.get_len(), txc->t);
-
-       if (!g_conf->bluestore_debug_no_reuse_blocks)
-	{
-
-	      alloc->release(p.get_start(), p.get_len());	
-	}
-      }
     }
-   else
-    {
-	discard_to_gctrd (txc->released);
+    if(!g_conf->bdev_ocssd_enable) {
+       if (!g_conf->bluestore_debug_no_reuse_blocks) 
+    		for (interval_set<uint64_t>::iterator p = txc->released.begin(); p != txc->released.end();  ++p) {
+	      			alloc->release(p.get_start(), p.get_len());
+       }	
+    }
+    else {
+	if(!txc->released.empty()) {
+		//static std::atomic<uint64_t> g = {0};
+		//dout(1) << __func__ << ",txc->released:" << std::hex << txc->released <<  std::dec << dendl;	
+		//dout(1) << __func__ << ",total size=" << std::dec   << pretty_si_t( g += txc->released.size())<< std::dec << dendl;
+		discard_to_gctrd (txc->released);
+	}
     }
   }
 }
@@ -3969,20 +3972,26 @@ void BlueStore::_txc_update_fm(TransContext *txc)
 void BlueStore::discard_to_gctrd(interval_set<uint64_t> &p) {
   gc_thread.lock.Lock();
   gc_thread.invalid_extents.insert(p);
-  if(gc_thread.invalid_extents.size() >= bdev->get_segment_size())
-    gc_thread.cond.SignalOne();
+  dout(1) << __func__ << ",invalid set size=" << std::dec   << pretty_si_t(gc_thread.invalid_extents.size())<< std::dec << dendl;
+  if(gc_thread.invalid_extents.size() >= bdev->get_segment_size()){
+  	dout(1) << __func__ << ", invoke gc thread" << dendl;
+	gc_thread.cond.SignalOne();
+  }
   gc_thread.lock.Unlock();
 }
 
 void BlueStore::GCThread::may_trigger_gc( bool timeout , std::set<uint32_t> &sids)
 {
-  if(gc_policy == STUPID)
-  {
+
+  static int expected_count = store->bdev->get_segment_size() / 4096;
+
+
+
+  if(gc_policy == STUPID) {
       uint64_t victim_seg_id = 0;
       for(auto sid : sids) {
       auto it = segmentSummarys + sid;
-      if (it->invalid_bitmap.all())
-        {
+      if (it->invalid_bitmap.count() >= expected_count) {
           victim_seg_id = sid;
           interval_set<uint64_t> p;
           p.insert(victim_seg_id * store->bdev->get_segment_size() ,
@@ -3991,6 +4000,7 @@ void BlueStore::GCThread::may_trigger_gc( bool timeout , std::set<uint32_t> &sid
           store->bdev->queue_discard(p);
           it->invalid_bitmap.reset();
           //give back to Allocator
+          //dout(0) << __func__ << ",give back to allocator" << std::hex << p << std::dec << dendl;
           store->alloc->release(p.begin().get_start(),p.begin().get_len());
         }
       }
@@ -4015,7 +4025,7 @@ void *BlueStore::GCThread::entry()
       invalid_set_local.swap(invalid_extents);
       lock.Unlock();
     }
-   else
+    else
     {
       continue;
     }
@@ -5928,13 +5938,13 @@ int BlueStore::_do_ocssd_write(TransContext *txc,
         //fall with in one block
         bufferlist page;
         // We must pre_read the page which is pointed to by offset
-        dout(0) << __func__ << ",step1:" << "pre read a page" << dendl;
+        dout(1) << __func__ << ",step1:" << "pre read a page" << dendl;
         pre_read_page(offset, page);
-        dout(0) << __func__ << ",step2:" << "modify buffer" << dendl;
+        dout(1) << __func__ << ",step2:" << "modify buffer" << dendl;
         // copy bl's content to correct range in the 4K page .
         page.copy_in( offset % 4096 , length , bl );
         // swap the result conten to bl
-        dout(0) << __func__ << ",step3:" << "swap buffer " << dendl;
+        dout(1) << __func__ << ",step3:" << "swap buffer " << dendl;
         bl.swap(page);
         alloc_length = 4096;
     }
@@ -6003,13 +6013,13 @@ int BlueStore::_do_ocssd_write(TransContext *txc,
     assert(it->second.length == alloc_length );
 
     if(offset + length > o->onode.size){
-        dout(0) << __func__ << std::hex << ",extend onode :0x" << o->onode.size << " to:0x"
+        dout(1) << __func__ << std::hex << ",extend onode :0x" << o->onode.size << " to:0x"
                 << offset + length
                 << std::dec << dendl;
         o->onode.size = offset + length;
     }
 
-    dout(0) << __func__ << std::hex << ",oid=" << o->onode.nid << ",orig:0x" << offset << "~" << length
+    dout(1) << __func__ << std::hex << ",oid=" << o->onode.nid << ",orig:0x" << offset << "~" << length
             << "," << "aligned:0x" << alloc_offset << "~" << alloc_length
             << "," << "bdev_lba_off:0x" << it->second.offset << "~" << it->second.length
             << ",ioc->submit_seq=" << txc->ioc.ocssd_submit_seq
@@ -6027,7 +6037,7 @@ int BlueStore::_do_ocssd_write(TransContext *txc,
     it->second.clear_flag(bluestore_extent_t::FLAG_UNWRITTEN);
 
     //dout(0) << __func__ << "txc->allocated:" << txc->allocated << dendl;
-    //dout(0) << __func__ << "txc->released:" << txc->released << dendl;
+    dout(1) << __func__ << "txc->released:" << txc->released << dendl;
     
 
 

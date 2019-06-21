@@ -68,7 +68,12 @@ int KernelDevice::open(string p)
   int r = 0;
   dout(1) << __func__ << " path " << path << dendl;
 
-  fd_direct = ::open(path.c_str(), O_RDWR | O_DIRECT);
+
+  bool is_db_or_wal = path.find_first_of('.') != string::npos;
+  if(is_db_or_wal)
+	  fd_direct = ::open(path.c_str(), O_RDWR);
+  else	
+	  fd_direct = ::open(path.c_str(), O_RDWR | O_DIRECT);
   if (fd_direct < 0) {
     int r = -errno;
     derr << __func__ << " open got: " << cpp_strerror(r) << dendl;
