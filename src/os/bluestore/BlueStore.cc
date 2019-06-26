@@ -954,8 +954,7 @@ int BlueStore::_open_bdev(bool create)
   if (r < 0)
     goto fail;
 
-  if(create)
-  {
+  if(g_conf->bdev_ocssd_enable && create) {
       bdev->init_disk();
   }
 
@@ -1917,7 +1916,8 @@ int BlueStore::mount()
     goto out_bdev;
 
   //GC-Thread
-  gc_thread.init();
+  if(g_conf->bdev_ocssd_enable)
+  	gc_thread.init();
 
   r = _open_alloc(false);
   if (r < 0)
@@ -1979,10 +1979,12 @@ int BlueStore::umount()
   _sync();
   _reap_collections();
   coll_map.clear();
-
-  dout(20) << __func__ << " stopping gc thread" << dendl;
-  gc_thread.shutdown();
   
+  if(g_conf->bdev_ocssd_enable) {
+  	dout(20) << __func__ << " stopping gc thread" << dendl;
+  	gc_thread.shutdown();
+  }  
+
   dout(20) << __func__ << " stopping kv thread" << dendl;
   _kv_stop();
   dout(20) << __func__ << " draining wal_wq" << dendl;

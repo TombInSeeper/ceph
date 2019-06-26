@@ -69,11 +69,27 @@ int KernelDevice::open(string p)
   dout(1) << __func__ << " path " << path << dendl;
 
 
-  bool is_db_or_wal = path.find_first_of('.') != string::npos;
-  if(is_db_or_wal)
-	  fd_direct = ::open(path.c_str(), O_RDWR);
-  else	
-	  fd_direct = ::open(path.c_str(), O_RDWR | O_DIRECT);
+  bool is_db_or_wal = true;
+  if(path.substr(path.length() - 5  , 5) == "block") {
+      is_db_or_wal = false;
+  }
+
+
+  if(is_db_or_wal) {
+      dout(0) << __func__ << " open without O_DIRECT" << dendl;
+      fd_direct = ::open(path.c_str(), O_RDWR);
+  }
+  else {
+      	if(g_conf->bdev_ocssd_enable) {
+      		dout(0) << __func__ << " open with O_DIRECT" << dendl;
+      		fd_direct = ::open(path.c_str(), O_RDWR | O_DIRECT);
+  	}
+	else {
+     		dout(0) << __func__ << " block open with O_DIRECT" << dendl;
+      		//fd_direct = ::open(path.c_str(), O_RDWR );
+      		fd_direct = ::open(path.c_str(), O_RDWR | O_DIRECT);
+	}
+  }
   if (fd_direct < 0) {
     int r = -errno;
     derr << __func__ << " open got: " << cpp_strerror(r) << dendl;

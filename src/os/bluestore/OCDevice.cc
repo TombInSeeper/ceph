@@ -293,6 +293,9 @@ void OCDevice::aio_submit(IOContext *ioc)
 
 }
 
+
+static uint64_t total_bytes= 0 ;
+
 void OCDevice::aio_thread_work()
 {
     auto pred = [&](){
@@ -325,10 +328,13 @@ void OCDevice::aio_thread_work()
                 if((g_conf->bdev_ocssd_driver == "libocssd"))
                 {
                     //dout(0) << __func__ << std::hex <<  " TRULY:LBA_off=" << aio->lba_off << " LBA_len=" << aio->lba_len << std::dec << " done.." << dendl;
-                    dout(DOUT_LEVEL) << __func__ << "," << "[WRITE]," << write_seq++ << "," << aio->dg_str << dendl;
+
+
                     ocssd_write(ocssd, (struct cmd_ctx*)aio->ocssd_ctx);
                     ocssd_destory_ctx((struct cmd_ctx*)aio->ocssd_ctx);
-                }
+		    total_bytes += aio->lba_len;
+               	    //dout(0) << __func__ << "total write bytes=" << total_bytes << dendl;
+		}
 //                else
 //                {
 //                    dout(DOUT_LEVEL) << __func__ << ",[WIRTE]" << write_seq++   << std::hex <<
@@ -358,6 +364,9 @@ void OCDevice::aio_thread_work()
             }
             _io_queue.pop_front();
         }
+
+
+
         l.lock();
     }
 }
