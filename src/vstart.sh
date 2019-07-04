@@ -567,7 +567,7 @@ $DAEMONOPTS
         bluestore_min_alloc_size = 4096
 
         bdev_ocssd_driver = libocssd
-        bdev_ocssd_enable = enable
+        bdev_ocssd_enable = false
         ;bdev_ocssd_device = /dev/nvme0n1
 
 	bluestore_cache_size = 0
